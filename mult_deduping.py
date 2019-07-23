@@ -662,7 +662,7 @@ def countRecordSets(dupe_aspace_record_sets):
 	
 	return string
 
-# fucked up the families
+
 
 if __name__ == "__main__":
 
