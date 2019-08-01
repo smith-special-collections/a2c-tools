@@ -1,0 +1,270 @@
+from archivesspace import archivesspace
+import pprint
+import argparse
+import logging
+import json
+import re
+import pandas as pd
+import datetime
+
+
+RELATOR_DICT = {
+	'artist': 'art',
+	'author': 'aut',
+	'donor': 'dnr',
+	'editor': 'edt',
+	'publisher': 'pbl',
+	'translator': 'trl'
+}
+
+DATE = datetime.date.today()
+DATE = DATE.__str__()
+
+def make_accession_record(accession):
+	'''Function to make MRBC accessions connected to parent lots'''
+
+	acc_dict = {'access_restrictions': False,
+				 'accession_date': DATE,
+				 'classifications': [],
+				 'deaccessions': [],
+				 'external_documents': [],
+				 'external_ids': [],
+				 'instances': [],
+				 'jsonmodel_type': 'accession',
+				 'linked_events': [],
+				 'publish': False,
+				 'related_resources': [],
+				 'repository': {'ref': '/repositories/3'},
+				 'restrictions_apply': False,
+				 'rights_statements': [],
+				 'subjects': [],
+				 'suppressed': False,
+				 'title': accession['title'],
+				 'use_restrictions': False}
+
+	# Related accessions
+	acc_dict['related_accessions'] = []
+	rel_acc = {}
+	rel_acc['jsonmodel_type'] = 'accession_parts_relationship'
+	rel_acc['relator'] = 'forms_part_of'
+	rel_acc['relator_type'] = 'part'
+	try:
+		rel_acc['ref'] = accession['related_accessions']
+		acc_dict['related_accessions'].append(rel_acc)
+	except:
+		pass
+				 
+	# Provenance
+	try:
+		acc_dict['provenance'] = accession['provenance']
+	except:
+		pass
+
+	# Resource type
+	try:
+		acc_dict['resource_type'] = accession['resource_type'].lower()
+	except:
+		pass
+
+	# Id
+	try:
+		acc_dict['id_0'] = str(int(accession['id_0']))
+	except:
+		pass
+	try:
+		acc_dict['id_1'] = accession['id_1']
+	except:
+		pass
+	try:
+		i2 = str(accession['id_2']).split('.')
+		acc_dict['id_2'] = i2[1]
+	except:
+		pass
+	try:
+		i3 = str(accession['id_3']).split('.')
+		acc_dict['id_3'] = i3[1]
+	except:
+		pass
+
+	# Content Description
+	try:
+		acc_dict['content_description'] = accession['content_description']
+	except:
+		pass
+
+	# Extents
+	acc_dict['extents'] = []
+	extent_dict = {}
+	try:
+		extent_dict['extent_type'] = accession['extent_type'].lower() + 's'
+	except:
+		pass
+	try:
+		extent_dict['number'] = str(int(accession['extent']))
+	except:
+		pass
+	try:
+		extent_dict['portion'] = accession['portion'].lower()
+	except:
+		pass
+	extent_dict['jsonmodel_type'] = 'extent'
+	acc_dict['extents'].append(extent_dict)			 
+
+	# Date field
+	acc_dict['dates'] = []
+	date_dict = {}
+
+	try:
+		if accession['date_type'] != None and accession['begin_date'] != None:
+			if accession['date_type'].lower() == 'inclusive':
+				date_dict['end'] = accession['end_date']
+			if accession['begin_date'] != None:
+				if len(str(int(accession['begin_date']))) > 4 or len(str(int(accession['begin_date']))) < 4:
+					date_dict['begin'] = len(str(accession['begin_date']))
+				else:
+					date_dict['begin'] = str(int(accession['begin_date']))
+			if accession['certainty'] != None:
+				date_dict['certainty'] = accession['certainty']
+			else:
+				pass
+			date_dict['date_type'] = accession['date_type'].lower()
+			date_dict['calendar'] = 'gregorian'
+			date_dict['era'] = 'ce'
+			date_dict['jsonmodel_type'] = 'date'
+			date_dict['label'] = 'publication'
+			acc_dict['dates'].append(date_dict)
+	except:
+		pass
+
+
+	# try:
+	# 	try:
+	# 		date_dict['begin'] = str(accession['date'])
+	# 	except:
+	# 		date_dict['begin'] = '0000'
+	# 	date_dict['calendar'] = 'gregorian'
+	# 	date_dict['era'] = 'ce'
+	# 	date_dict['jsonmodel_type'] = 'date'
+	# 	date_dict['label'] = 'publication'
+	# 	try:
+	# 		date_dict['date_type'] = accession['date_type'].lower()
+	# 	except:
+	# 		date_dict['date_type'] = 'single'
+	# 	acc_dict['dates'].append(date_dict)
+	# except:
+	# 	pass
+
+	# Acquisition Type
+	try:
+		acc_dict['acquisition_type'] = accession['acquisition_type'].lower()
+	except:
+		pass
+	
+	# Linked agents
+	acc_dict['linked_agents'] = []
+
+	try:
+		for key in RELATOR_DICT.keys():
+			if key == accession['agent_type1'].lower():
+				relator1 = RELATOR_DICT[key]
+			if key == accession['agent_type2'].lower():
+				relator2 = RELATOR_DICT[key]
+	except:
+		pass
+
+	try:
+		agent1 = {}
+		agent1['terms'] = []
+		agent1['ref'] = accession['agent_uri1']
+		if relator1:
+			agent1['relator'] = relator1
+		if accession['linked_agent_role1']:
+			agent1['role'] = accession['linked_agent_role1'].lower()
+
+		acc_dict['linked_agents'].append(agent1)
+	except:
+		pass
+
+	try:
+		agent2 = {}
+		agent2['terms'] = []
+		agent2['ref'] = accession['agent_uri2']
+		if relator2:
+			agent2['relator'] = relator1
+		if accession['linked_agent_role2']:
+			agent2['role'] = accession['linked_agent_role2'].lower()
+
+		acc_dict['linked_agents'].append(agent2)
+	except:
+		pass
+
+	return acc_dict
+
+
+if __name__ == "__main__":
+
+	CONFIGFILE = "archivesspace.cfg"
+
+	argparser = argparse.ArgumentParser()
+	argparser.add_argument("SERVERCFG", nargs="?", default="DEFAULT", help="Name of the server configuration section e.g. 'production' or 'testing'. Edit archivesspace.cfg to add a server configuration section. If no configuration is specified, the default settings will be used host=localhost user=admin pass=admin.")
+	argparser.add_argument("CSVname", nargs="?", default="DEFAULT", help="Name of the CSV spreadsheet, e.g, 'duplaix.csv. Note: It must be in the same directory as this code file.")
+	cliArguments = argparser.parse_args()
+
+	aspace = archivesspace.ArchivesSpace()
+	aspace.setServerCfg(CONFIGFILE, section=cliArguments.SERVERCFG)
+	aspace.connect()
+
+	logging.basicConfig(level=logging.INFO)
+
+	FILE = cliArguments.CSVname
+
+
+	# Reads CSV file
+	csv_file = pd.DataFrame(pd.read_csv(FILE, sep = ",", header = 0, index_col = False))
+	
+	# Creates new JSON file name
+	JSON_FILE = FILE[:-4] + ".json"
+
+	# Transforms CSV into JSON for parsing
+	csv_file.to_json(JSON_FILE, orient = "records", date_format = "epoch", double_precision = 10, force_ascii = True, date_unit = "ms", default_handler = None)
+
+	# Opens JSON file
+	with open(JSON_FILE) as jsonfile:
+		try:
+			accessions = json.load(jsonfile)
+		except ValueError:
+			logging.info('File not found')
+			exit(1)
+
+	# Iterates over individual accessions
+	errors = {}
+	errors['rows'] = []
+	string = 'Could not create Accession records for the following acessions. Check spreadsheet for faulty metadata.'
+	errors['rows'].append(string)
+
+	count = 0
+	for accession in accessions:
+		if accession['complete'] == True:
+			count += 1
+			print(count)
+			record = make_accession_record(accession)
+			try:
+				post_record = aspace.post('/repositories/3/accessions', record)
+				logging.info('Accession record created for {}'.format(accession['title']))
+			except:
+				error_string = 'Unable to post accession because of metadata errors. Check data for {}'.format(accession['title'])
+				logging.info(error_string)
+				errors['rows'].append(accession['title'])
+
+	# Writing errors to a file
+	with open('accession_creation_failures.txt', 'w') as outfile:
+		json.dump(errors, outfile)
+
+	# count = 0
+	# for accession in accessions:
+	# 	if accession['complete'] == True:
+	# 		count += 1
+	# 		print(count)
+	# 		dic = make_accession_record(accession)
+	# 		print(accession['title'])
+	# 		pprint.pprint(dic['dates'])
