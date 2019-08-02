@@ -55,9 +55,9 @@ def make_accession_record(accession):
 		pass
 				 
 	# Provenance
-	try:
+	if accession['provenance'] != None:
 		acc_dict['provenance'] = accession['provenance']
-	except:
+	else:
 		pass
 
 	# Resource type
@@ -87,14 +87,13 @@ def make_accession_record(accession):
 		pass
 
 	# Content Description
-	try:
+	if accession['content_description'] != None:
 		acc_dict['content_description'] = accession['content_description']
-	except:
-		pass
 
 	# Extents
 	acc_dict['extents'] = []
 	extent_dict = {}
+	extent_dict['jsonmodel_type'] = 'extent'
 	try:
 		extent_dict['extent_type'] = accession['extent_type'].lower() + 's'
 	except:
@@ -107,50 +106,31 @@ def make_accession_record(accession):
 		extent_dict['portion'] = accession['portion'].lower()
 	except:
 		pass
-	extent_dict['jsonmodel_type'] = 'extent'
-	acc_dict['extents'].append(extent_dict)			 
+
+	# Ensures extents array has all the required fields, otherwise an error will be raised when trying to post	
+	if len(extent_dict) > 3:
+		acc_dict['extents'].append(extent_dict)			 
 
 	# Date field
 	acc_dict['dates'] = []
 	date_dict = {}
 
-	try:
-		if accession['date_type'] != None and accession['begin_date'] != None:
-			if accession['date_type'].lower() == 'inclusive':
-				date_dict['end'] = accession['end_date']
-			if accession['begin_date'] != None:
-				if len(str(int(accession['begin_date']))) > 4 or len(str(int(accession['begin_date']))) < 4:
-					date_dict['begin'] = len(str(accession['begin_date']))
-				else:
-					date_dict['begin'] = str(int(accession['begin_date']))
-			if accession['certainty'] != None:
-				date_dict['certainty'] = accession['certainty']
-			else:
-				pass
-			date_dict['date_type'] = accession['date_type'].lower()
-			date_dict['calendar'] = 'gregorian'
-			date_dict['era'] = 'ce'
-			date_dict['jsonmodel_type'] = 'date'
-			date_dict['label'] = 'publication'
-			acc_dict['dates'].append(date_dict)
-	except:
-		pass
-
-
 	# try:
-	# 	try:
-	# 		date_dict['begin'] = str(accession['date'])
-	# 	except:
-	# 		date_dict['begin'] = '0000'
-	# 	date_dict['calendar'] = 'gregorian'
-	# 	date_dict['era'] = 'ce'
-	# 	date_dict['jsonmodel_type'] = 'date'
-	# 	date_dict['label'] = 'publication'
-	# 	try:
-	# 		date_dict['date_type'] = accession['date_type'].lower()
-	# 	except:
-	# 		date_dict['date_type'] = 'single'
-	# 	acc_dict['dates'].append(date_dict)
+	if accession['date_type'] != None and accession['begin_date'] != None:
+		if accession['date_type'].lower() == 'inclusive':
+			date_dict['end'] = accession['end_date']
+		if len(str(int(accession['begin_date']))) > 4 or len(str(int(accession['begin_date']))) < 4:
+			date_dict['begin'] = '0000'
+		else:
+			date_dict['begin'] = str(int(accession['begin_date']))
+		if accession['certainty'] != None and (accession['certainty'].lower() == 'approximate' or accession['certainty'].lower() == 'inferred' or accession['certainty'].lower() == 'questionable'):
+			date_dict['certainty'] = accession['certainty']
+		date_dict['date_type'] = accession['date_type'].lower()
+		date_dict['calendar'] = 'gregorian'
+		date_dict['era'] = 'ce'
+		date_dict['jsonmodel_type'] = 'date'
+		date_dict['label'] = 'publication'
+		acc_dict['dates'].append(date_dict)
 	# except:
 	# 	pass
 
@@ -163,40 +143,43 @@ def make_accession_record(accession):
 	# Linked agents
 	acc_dict['linked_agents'] = []
 
-	try:
+	if accession['agent_type1'] != None:
 		for key in RELATOR_DICT.keys():
 			if key == accession['agent_type1'].lower():
 				relator1 = RELATOR_DICT[key]
+			else:
+				relator1 = ""
+
+	if accession['agent_type2'] != None:
+		for key in RELATOR_DICT.keys():
 			if key == accession['agent_type2'].lower():
 				relator2 = RELATOR_DICT[key]
-	except:
-		pass
+			else:
+				relator2 = ""
 
-	try:
-		agent1 = {}
-		agent1['terms'] = []
+
+	agent1 = {}
+	agent1['terms'] = []
+	if accession['agent_uri1'] != None:
 		agent1['ref'] = accession['agent_uri1']
-		if relator1:
+		if relator1 != "":
 			agent1['relator'] = relator1
-		if accession['linked_agent_role1']:
+		if accession['linked_agent_role1'] != None:
 			agent1['role'] = accession['linked_agent_role1'].lower()
 
 		acc_dict['linked_agents'].append(agent1)
-	except:
-		pass
 
-	try:
-		agent2 = {}
-		agent2['terms'] = []
+	agent2 = {}
+	agent2['terms'] = []
+	if accession['agent_uri2'] != None:
 		agent2['ref'] = accession['agent_uri2']
-		if relator2:
+		if relator2 != "":
 			agent2['relator'] = relator1
-		if accession['linked_agent_role2']:
+		if accession['linked_agent_role2'] != None:
 			agent2['role'] = accession['linked_agent_role2'].lower()
 
 		acc_dict['linked_agents'].append(agent2)
-	except:
-		pass
+
 
 	return acc_dict
 
@@ -239,32 +222,20 @@ if __name__ == "__main__":
 	# Iterates over individual accessions
 	errors = {}
 	errors['rows'] = []
-	string = 'Could not create Accession records for the following acessions. Check spreadsheet for faulty metadata.'
-	errors['rows'].append(string)
 
 	count = 0
 	for accession in accessions:
 		if accession['complete'] == True:
 			count += 1
-			print(count)
+			logging.info(count)
 			record = make_accession_record(accession)
 			try:
-				post_record = aspace.post('/repositories/3/accessions', record)
+				post = aspace.post('/repositories/3/accessions', record)
 				logging.info('Accession record created for {}'.format(accession['title']))
-			except:
+			except Exception as e:
 				error_string = 'Unable to post accession because of metadata errors. Check data for {}'.format(accession['title'])
 				logging.info(error_string)
-				errors['rows'].append(accession['title'])
+				errors['rows'].append(e)
 
-	# Writing errors to a file
-	with open('accession_creation_failures.txt', 'w') as outfile:
-		json.dump(errors, outfile)
+	pprint.pprint(errors['rows'])
 
-	# count = 0
-	# for accession in accessions:
-	# 	if accession['complete'] == True:
-	# 		count += 1
-	# 		print(count)
-	# 		dic = make_accession_record(accession)
-	# 		print(accession['title'])
-	# 		pprint.pprint(dic['dates'])
