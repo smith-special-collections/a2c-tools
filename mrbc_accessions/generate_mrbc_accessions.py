@@ -206,7 +206,8 @@ if __name__ == "__main__":
 	csv_file = pd.DataFrame(pd.read_csv(csvfile, sep = ",", header = 0, index_col = False))
 	
 	# Creates new JSON file name
-	json_file = csvfile[:-4] + ".json"
+	name = csv_file.split('.')
+	json_file = name[0] + ".json"
 
 	# Transforms CSV into JSON for parsing
 	csv_file.to_json(json_file, orient = "records", date_format = "epoch", double_precision = 10, force_ascii = True, date_unit = "ms", default_handler = None)
