@@ -120,11 +120,16 @@ def make_accession_record(accession):
 	if accession['date_type'] != None and accession['begin_date'] != None:
 		if accession['date_type'].lower() == 'inclusive':
 			date_dict['end'] = accession['end_date']
-		if len(str(int(accession['begin_date']))) > 4 or len(str(int(accession['begin_date']))) < 4:  # Date has to be formatted in year XXXX format (without text or date range [e.g., XXXX-XXXX]), otherwise resulting date will be '0000'
+		# Date has to be formatted in year XXXX format (without text or date range [e.g., XXXX-XXXX]), otherwise resulting date will be '0000'
+		if len(str(int(accession['begin_date']))) > 4 \
+		or len(str(int(accession['begin_date']))) < 4:  
 			date_dict['begin'] = '0000' 
 		else:
 			date_dict['begin'] = str(int(accession['begin_date']))
-		if accession['certainty'] != None and (accession['certainty'].lower() == 'approximate' or accession['certainty'].lower() == 'inferred' or accession['certainty'].lower() == 'questionable'):
+		if accession['certainty'] != None and ( \
+			accession['certainty'].lower() == 'approximate' or \
+			accession['certainty'].lower() == 'inferred' or \
+			accession['certainty'].lower() == 'questionable'):
 			date_dict['certainty'] = accession['certainty']
 		date_dict['date_type'] = accession['date_type'].lower()
 		date_dict['calendar'] = 'gregorian'
