@@ -36,7 +36,7 @@ def make_accession_record(accession):
 				 'linked_events': [],
 				 'publish': False,
 				 'related_resources': [],
-				 'repository': {'ref': '/repositories/3'},
+				 'repository': {'ref': '/repositories/' + REPOSITORY},
 				 'restrictions_apply': False,
 				 'rights_statements': [],
 				 'subjects': [],
