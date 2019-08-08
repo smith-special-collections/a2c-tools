@@ -183,7 +183,7 @@ if __name__ == "__main__":
 	argparser = argparse.ArgumentParser()
 	argparser.add_argument("SERVERCFG", nargs="?", default="DEFAULT", help="Name of the server configuration section e.g. 'production' or 'testing'. Edit archivesspace.cfg to add a server configuration section. If no configuration is specified, the default settings will be used host=localhost user=admin pass=admin.")
 	argparser.add_argument("CSVfile", nargs="?", default="DEFAULT", help="Name of CSV file or file path to CSV file")
-	argparser.add_argmuent("reponum", nargs="?", default="DEFAULT", help="Number of repository where resources will go")
+	argparser.add_argument("reponum", nargs="?", default="DEFAULT", help="Number of repository where resources will go")
 	cliArguments = argparser.parse_args()
 
 	aspace = archivesspace.ArchivesSpace()
