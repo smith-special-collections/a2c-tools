@@ -8,6 +8,8 @@ import pandas as pd
 import datetime
 
 
+REPOSITORY = '3'
+
 RELATOR_DICT = {
 	'artist': 'art',
 	'author': 'aut',
@@ -115,7 +117,6 @@ def make_accession_record(accession):
 	acc_dict['dates'] = []
 	date_dict = {}
 
-	# try:
 	if accession['date_type'] != None and accession['begin_date'] != None:
 		if accession['date_type'].lower() == 'inclusive':
 			date_dict['end'] = accession['end_date']
@@ -131,8 +132,6 @@ def make_accession_record(accession):
 		date_dict['jsonmodel_type'] = 'date'
 		date_dict['label'] = 'publication'
 		acc_dict['dates'].append(date_dict)
-	# except:
-	# 	pass
 
 	# Acquisition Type
 	try:
@@ -231,7 +230,7 @@ if __name__ == "__main__":
 			logging.info(count)
 			record = make_accession_record(accession)
 			try:
-				post = aspace.post('/repositories/3/accessions', record)
+				post = aspace.post('/repositories/' + REPOSITORY + '/accessions', record)
 				logging.info('Accession record created for {}'.format(accession['title']))
 			except Exception as e:
 				error_string = 'Unable to post accession because of metadata errors. Check data for {}'.format(accession['title'])
