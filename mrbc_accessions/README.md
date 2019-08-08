@@ -1,1 +1,1 @@
-Code to create MRBC Accessions. This tool is for rare book archivists to bulk add accession records to ArchivesSpace, instaed of manually creating individual accession records.
+Code to create MRBC Accessions. This tool is for rare book archivists to bulk add accession records to ArchivesSpace, instead of manually creating individual accession records. Create a copy of template file and edit the file with the appropriate metadata. For controlled values, use the human-readable version (e.g., Author, not aut). 
