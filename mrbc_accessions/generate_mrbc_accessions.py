@@ -199,20 +199,20 @@ if __name__ == "__main__":
 
 	logging.basicConfig(level=logging.INFO)
 
-	FILE = cliArguments.CSVname
+	csvfile = cliArguments.CSVname
 
 
 	# Reads CSV file
-	csv_file = pd.DataFrame(pd.read_csv(FILE, sep = ",", header = 0, index_col = False))
+	csv_file = pd.DataFrame(pd.read_csv(csvfile, sep = ",", header = 0, index_col = False))
 	
 	# Creates new JSON file name
-	JSON_FILE = FILE[:-4] + ".json"
+	json_file = csvfile[:-4] + ".json"
 
 	# Transforms CSV into JSON for parsing
-	csv_file.to_json(JSON_FILE, orient = "records", date_format = "epoch", double_precision = 10, force_ascii = True, date_unit = "ms", default_handler = None)
+	csv_file.to_json(json_file, orient = "records", date_format = "epoch", double_precision = 10, force_ascii = True, date_unit = "ms", default_handler = None)
 
 	# Opens JSON file
-	with open(JSON_FILE) as jsonfile:
+	with open(json_file) as jsonfile:
 		try:
 			accessions = json.load(jsonfile)
 		except ValueError:
