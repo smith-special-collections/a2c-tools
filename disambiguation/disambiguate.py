@@ -2,6 +2,8 @@ from archivesspace import archivesspace
 import pprint
 import argparse
 import logging
+import json
+import csv
 import string
 import random
 
@@ -14,27 +16,45 @@ def randomString(stringLength=10):
     return ''.join(random.choice(letters) for i in range(stringLength))
 
 
-def makeNewContainer(box_num):
-	' Function to make a new top container for Jill Ker Conway '
+def get_good_container_info(first_series):
+	' Function to get container info from a correct box '
+
+	good_info = {}
+	children = getChildUris(first)
+	# To avoid a file with out a top container, index the second object
+	child = aspace.get(children[2]) 
+	good_container = aspace.get(child['instances'][0]['sub_container']['top_container']['ref'])
+	good_info['container_profile'] = good_container['container_profile']['ref']
+	good_info['display_string'] = good_container['collection'][0]['display_string']
+	good_info['identifier'] = good_container['collection'][0]['identifier']
+
+	return good_info
+
+
+def makeNewContainer(box_num, repo_num, resource_num, good_info):
+	' Function to make a new dummy top container '
 
 	string_1 = randomString()
 	string_2 = randomString(4)
+	cp = good_info['container_profile']
+	ds = good_info['display_string']
+	ident = good_info['identifier']
 	new_cont = {'active_restrictions': [],
 	 'barcode': string_1 + string_2,
-	 'collection': [{'display_string': 'Office of the President Jill Ker Conway '
-	                                   'Files',
-	                 'identifier': 'CA--MS--00071',
-	                 'ref': '/repositories/4/resources/374'}],
+	 'collection': [{'display_string': ds,
+	                 'identifier': ident,
+	                 'ref': '/repositories/' + str(repo_num) + '/resources/' + str(resource_num)}],
 	 'container_locations': [],
-	 'container_profile': {'ref': '/container_profiles/5'},
+	 # For now, assumes archival box for container profile -- may change this in future
+	 'container_profile': {'ref': cp},
 	 'indicator': str(box_num),
 	 'jsonmodel_type': 'top_container',
-	 'repository': {'ref': '/repositories/4'},
+	 'repository': {'ref': '/repositories/' + str(repo_num)},
 	 'restricted': False,
 	 'series': [],
 	 'type': 'box'}
 
-	post = aspace.post('/repositories/4/top_containers', new_cont)
+	post = aspace.post('/repositories/' + str(repo_num) + '/top_containers', new_cont)
 
 	return post['uri']
 
@@ -124,6 +144,9 @@ if __name__ == "__main__":
 	# Gets series from resource tree
 	series = getSeries(repo_num, resource_num)
 	
+	first = series[0]
+	good_info = get_good_container_info(first)
+
 	series_count = 0
 	# Skips over the first series because assumes those top containers are correct
 	for s in series[1:]: 
@@ -146,8 +169,6 @@ if __name__ == "__main__":
 				# Ignores file level objects without container instances
 				pass 
 
-		pprint.pprint(series_dict)
-
 		# Pulls out the keys [uris]
 		keys = series_dict.keys() 
 
@@ -157,13 +178,12 @@ if __name__ == "__main__":
 				# Adds the box numbers to a list to know how many boxes to create
 				box_nums.append(series_dict[k]) 
 
-
 		logging.info('How many box nums: {}'.format(len(box_nums)))
 
 		new_cont_uris = []
 		for num in box_nums:
 			# Makes the new top container and adds the uri for it to a list
-			new_cont = makeNewContainer(num) 
+			new_cont = makeNewContainer(num, repo_num, resource_num, good_info) 
 			new_cont_uris.append(new_cont)
 
 		logging.info('How many new containers made: {}'.format(len(new_cont_uris)))
@@ -189,7 +209,6 @@ if __name__ == "__main__":
 					# Adds the new container link and updates the child record					
 					post = aspace.post(k, record) 
 					pprint.pprint(post)
-
 
 
 
