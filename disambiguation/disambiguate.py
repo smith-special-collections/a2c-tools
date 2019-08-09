@@ -2,8 +2,6 @@ from archivesspace import archivesspace
 import pprint
 import argparse
 import logging
-import json
-import csv
 import string
 import random
 
