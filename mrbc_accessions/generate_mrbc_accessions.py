@@ -80,11 +80,17 @@ def make_accession_record(accession):
 	try:
 		i2 = str(accession['id_2']).split('.')
 		acc_dict['id_2'] = i2[1]
+		if len(acc_dict['id_2']) < 4:
+			while len(acc_dict['id_2']) < 4:
+				acc_dict['id_2'] = acc_dict['id_2'] + '0'
 	except:
 		pass
 	try:
 		i3 = str(accession['id_3']).split('.')
 		acc_dict['id_3'] = i3[1]
+		if len(acc_dict['id_3']) < 4:
+			while len(acc_dict['id_3']) < 4:
+				acc_dict['id_3'] = acc_dict['id_3'] + '0'
 	except:
 		pass
 
