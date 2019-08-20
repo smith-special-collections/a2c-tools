@@ -3,12 +3,9 @@ import pprint
 import argparse
 import logging
 import json
-import re
 import pandas as pd
 import datetime
 
-
-REPOSITORY = '3'
 
 RELATOR_DICT = {
 	'artist': 'art',
@@ -36,7 +33,7 @@ def make_accession_record(accession):
 				 'linked_events': [],
 				 'publish': False,
 				 'related_resources': [],
-				 'repository': {'ref': '/repositories/' + REPOSITORY},
+				 'repository': {'ref': '/repositories/3'},
 				 'restrictions_apply': False,
 				 'rights_statements': [],
 				 'subjects': [],
@@ -126,16 +123,11 @@ def make_accession_record(accession):
 	if accession['date_type'] != None and accession['begin_date'] != None:
 		if accession['date_type'].lower() == 'inclusive':
 			date_dict['end'] = accession['end_date']
-		# Date has to be formatted in year XXXX format (without text or date range [e.g., XXXX-XXXX]), otherwise resulting date will be '0000'
-		if len(str(int(accession['begin_date']))) > 4 \
-		or len(str(int(accession['begin_date']))) < 4:  
-			date_dict['begin'] = '0000' 
+		if len(str(accession['begin_date'])) > 4 or len(str(accession['begin_date'])) < 4:
+			date_dict['begin'] = '0000'
 		else:
 			date_dict['begin'] = str(int(accession['begin_date']))
-		if accession['certainty'] != None and ( \
-			accession['certainty'].lower() == 'approximate' or \
-			accession['certainty'].lower() == 'inferred' or \
-			accession['certainty'].lower() == 'questionable'):
+		if accession['certainty'] != None and (accession['certainty'].lower() == 'approximate' or accession['certainty'].lower() == 'inferred' or accession['certainty'].lower() == 'questionable'):
 			date_dict['certainty'] = accession['certainty']
 		date_dict['date_type'] = accession['date_type'].lower()
 		date_dict['calendar'] = 'gregorian'
@@ -190,6 +182,24 @@ def make_accession_record(accession):
 
 		acc_dict['linked_agents'].append(agent2)
 
+	# Payments module
+	payment_summary = {}
+	payment_summary['payments'] = []
+	payment_info = {}
+	if accession['total_price'] != None:
+		payment_summary['total_price'] = str(accession['total_price'])
+		payment_summary['currency'] = 'USD'
+		payment_summary['in_lot'] = False
+		payment_summary['jsonmodel_type'] = 'payment_summary'
+	if accession['payment_date'] != None:
+		payment_info['payment_date'] = accession['payment_date']
+	if accession['authorizer'] == 'Shannon Supple' or accession['authorizer'] == 'Shannon':
+		payment_info['jsonmodel_type'] = 'payment'
+		payment_info['authorizer'] = {}
+		payment_info['authorizer']['ref'] = '/agents/people/16'
+	if len(payment_info) != 0:
+		payment_summary['payments'].append(payment_info)
+		acc_dict['payment_summary'] = payment_summary
 
 	return acc_dict
 
@@ -209,21 +219,20 @@ if __name__ == "__main__":
 
 	logging.basicConfig(level=logging.INFO)
 
-	csvfile = cliArguments.CSVname
+	FILE = cliArguments.CSVname
 
 
 	# Reads CSV file
-	csv_file = pd.DataFrame(pd.read_csv(csvfile, sep = ",", header = 0, index_col = False))
+	csv_file = pd.DataFrame(pd.read_csv(FILE, sep = ",", header = 0, index_col = False))
 	
 	# Creates new JSON file name
-	name = csv_file.split('.')
-	json_file = name[0] + ".json"
+	JSON_FILE = FILE[:-4] + ".json"
 
 	# Transforms CSV into JSON for parsing
-	csv_file.to_json(json_file, orient = "records", date_format = "epoch", double_precision = 10, force_ascii = True, date_unit = "ms", default_handler = None)
+	csv_file.to_json(JSON_FILE, orient = "records", date_format = "epoch", double_precision = 10, force_ascii = True, date_unit = "ms", default_handler = None)
 
 	# Opens JSON file
-	with open(json_file) as jsonfile:
+	with open(JSON_FILE) as jsonfile:
 		try:
 			accessions = json.load(jsonfile)
 		except ValueError:
@@ -240,8 +249,9 @@ if __name__ == "__main__":
 			count += 1
 			logging.info(count)
 			record = make_accession_record(accession)
+			pprint.pprint(record)	
 			try:
-				post = aspace.post('/repositories/' + REPOSITORY + '/accessions', record)
+				post = aspace.post('/repositories/3/accessions', record)
 				logging.info('Accession record created for {}'.format(accession['title']))
 			except Exception as e:
 				error_string = 'Unable to post accession because of metadata errors. Check data for {}'.format(accession['title'])
