@@ -18,9 +18,9 @@ def create_new_people_agent(name):
 
 	name_dict = {}
 	namex = name.split(',')
-	if re.findall('--', name):
+	if re.match('--', name):
 		name_dict['primary_name'] = name
-	if len(re.findall(r'\d+', namex[-1])) != 0:
+	if len(re.match(r'\d+', namex[-1])) != 0:
 		name_dict['dates'] = namex[-1].strip()
 	try:
 		name_dict['primary_name'] = namex[0].strip()
@@ -41,6 +41,85 @@ def create_new_people_agent(name):
 	return agent
 
 
+def create_new_corp_agent(name):
+	''' Function to create new corporate agent '''
+
+	agent = {'jsonmodel_type': 'agent_corporate_entity',
+	'names': [],
+	'agent_type': 'agent_corporate_entity'}
+
+	name_dict = {}
+	name_dict['primary_name'] = name
+	name_dict['rules'] = 'rda'
+	name_dict['jsonmodel_type'] = 'name_corporate_entity'
+	name_dict['sort_name_auto_generate'] = True
+	name_dict['is_display_name'] = True
+
+	agent['names'].append(name_dict)
+
+	return agent
+
+
+def create_new_topical_sub(name):
+	''' Function to create new topical subject '''
+
+	subject = { "jsonmodel_type":"subject",
+	"external_ids":[],
+	"publish": True,
+	"is_slug_auto": True,
+	"used_within_repositories":[],
+	"used_within_published_repositories":[],
+	"terms":[{ "jsonmodel_type":"term",
+	"term": name,
+	'vocabulary': '/vocabularies/1',
+	"term_type":"topical"}],
+	"external_documents":[],
+	"source":"local",
+	'vocabulary': '/vocabularies/1'}
+
+	return subject
+
+
+def create_new_geographical_sub(name):
+	''' Function to create new topical subject '''
+
+	subject = { "jsonmodel_type":"subject",
+	"external_ids":[],
+	"publish": True,
+	"is_slug_auto": True,
+	"used_within_repositories":[],
+	"used_within_published_repositories":[],
+	"terms":[{ "jsonmodel_type":"term",
+	"term": name,
+	'vocabulary': '/vocabularies/1',
+	"term_type":"geographical"}],
+	"external_documents":[],
+	"source":"local",
+	'vocabulary': '/vocabularies/1'}
+
+	return subject
+
+
+def create_new_genre_sub(name):
+	''' Function to create new topical subject '''
+
+	subject = { "jsonmodel_type":"subject",
+	"external_ids":[],
+	"publish": True,
+	"is_slug_auto": True,
+	"used_within_repositories":[],
+	"used_within_published_repositories":[],
+	"terms":[{ "jsonmodel_type":"term",
+	"term": name,
+	'vocabulary': '/vocabularies/1',
+	"term_type":"genre_form"}],
+	"external_documents":[],
+	"source":"local",
+	'vocabulary': '/vocabularies/1'}
+
+	return subject
+
+
 if __name__ == "__main__":
 
 	CONFIGFILE = "archivesspace.cfg"
@@ -59,8 +138,8 @@ if __name__ == "__main__":
 	# csv = pd.read_csv('crosschecked_resources.csv')
 	
 	''' Code to create MRBC JSON file '''
-	# csv_file = pd.DataFrame(pd.read_csv('crosschecked_resources.csv', sep = ",", header = 0, index_col = False))
-	# csv_file.to_json("mrbc_to_aspace.json", orient = "records", date_format = "epoch", double_precision = 10, force_ascii = True, date_unit = "ms", default_handler = None)
+	csv_file = pd.DataFrame(pd.read_csv('second_pass.csv', sep = ",", header = 0, index_col = False))
+	csv_file.to_json("mrbc_to_aspace.json", orient = "records", date_format = "epoch", double_precision = 10, force_ascii = True, date_unit = "ms", default_handler = None)
 
 	with open("mrbc_to_aspace.json") as json_file:
 		try:
@@ -69,13 +148,21 @@ if __name__ == "__main__":
 			logging.info('File not found')
 			exit(1)
 
+
 	# Extracting the keys that contain person agent data to be created
-	person_keys = []
+	keys = []
 	for resource in resources:
 		for key in resource.keys():
-			if re.findall('person', key):
-				if key not in person_keys:
-					person_keys.append(key)
+			if re.match('genform', key):
+				if key not in keys:
+					keys.append(key)
+
+
+	for resource in resources:
+		for key in keys:
+			if resource[key] != None:
+				print(resource[key])
+
 
 	# Pulling out the name values from the keys
 	count = 0
@@ -84,18 +171,19 @@ if __name__ == "__main__":
 	errors = {}
 	errors['data'] = []
 	for resource in resources:
-		for key in person_keys:
-			if resource[key] != None and not 'agents' in resource[key]:
+		for key in keys:
+			if resource[key] != None and not 'subjects' in resource[key]:
 				name = unidecode.unidecode(resource[key])
-				new_agent = create_new_people_agent(name)
+				new_agent = create_new_genre_sub(name)
+				pprint.pprint(new_agent)
 				try:
 					count += 1
 					print(count)
-					new_agent_created = aspace.post('agents/people', new_agent)
+					new_agent_created = aspace.post('/subjects', new_agent)
 					pprint.pprint(new_agent_created)
 					new_agent_names['data'].append((name, new_agent_created['uri']))
 				except:
-					logging.info('Agent failed to be created')
+					logging.info('Subject failed to be created')
 					errors['data'].append(new_agent)
 
 
@@ -104,10 +192,6 @@ if __name__ == "__main__":
 
 	with open('agents_not_created.txt', 'w') as outfile:
 		json.dump(errors, outfile)
-
-
-
-
 
 
 
