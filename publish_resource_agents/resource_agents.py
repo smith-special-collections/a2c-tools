@@ -57,6 +57,6 @@ if __name__ == "__main__":
 						logging.info('Agent {} is unpublished'.format(agent['uri']))
 			except KeyError:
 				logging.info('No agents for resource {}'.format(resource['title']))
-	except:
+		except:
 			logging.info('Resource {} not found'.format(resource_num))
 			pass
