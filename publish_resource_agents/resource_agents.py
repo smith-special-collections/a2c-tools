@@ -24,7 +24,8 @@ if __name__ == "__main__":
 	resource_list = cliArguments.RESOURCE_LIST
 
 
-	for resource_num in resource_list:
+	for count, resource_num in enumerate(resource_list, 1):
+		print(count)
 		logging.info('Checking agents for resource {}'.format(resource_num))
 		try:
 			resource = aspace.get('/repositories/' + repo_num + '/resources/' + resource_num)
@@ -44,7 +45,8 @@ if __name__ == "__main__":
 			pass
 
 	# Checking that linked agents for resources are published
-	for resource_num in resource_list:
+	for count, resource_num in enumerate(resource_list, 1):
+		print(count)
 		logging.info('Checking that agents are published for resource {}'.format(resource_num))
 		try:
 			resource = aspace.get('/repositories/' + repo_num + '/resources/' + resource_num)
