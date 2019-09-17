@@ -4,6 +4,6 @@ This is code to publish any unpublished linked agents for a list of resources. I
 
 Example of command to run the program on the command line:
 
-'''
+```
 python3 resource_agents.py local 2 756 804 810
-'''
+```
