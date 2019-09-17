@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
 
 	for count, resource_num in enumerate(resource_list, 1):
-		print(count)
+		logging.debug(count)
 		logging.info('Checking agents for resource {}'.format(resource_num))
 		try:
 			resource = aspace.get('/repositories/' + repo_num + '/resources/' + resource_num)
@@ -35,18 +35,21 @@ if __name__ == "__main__":
 					if agent_record['publish'] == False:
 						agent_record['publish'] = True
 						post = aspace.post(agent_record['uri'], agent_record)
-						pprint.pprint(post)
+						logging.info('Agent {} has been published'.format(post['uri']))
+						logging.debug(post)
 					else:
 						logging.info('Agent {} already published'.format(agent_record['uri']))
 			except KeyError:
-				logging.info('Error with agents for resource {}'.format(resource['title']))
+				logging.warning('No linked agents found for resource {}'.format(resource['title']))
 		except:
-			logging.info('Resource {} not found'.format(resource_num))
+			logging.warning('Resource {} not found'.format(resource_num))
 			pass
 
+
 	# Checking that linked agents for resources are published
+	unpublish_count = 0
 	for count, resource_num in enumerate(resource_list, 1):
-		print(count)
+		logging.debug(count)
 		logging.info('Checking that agents are published for resource {}'.format(resource_num))
 		try:
 			resource = aspace.get('/repositories/' + repo_num + '/resources/' + resource_num)
@@ -56,9 +59,16 @@ if __name__ == "__main__":
 					if agent_record['publish'] == True:
 						pass
 					else:
-						logging.info('Agent {} is unpublished'.format(agent['uri']))
+						logging.warning('Agent {} is unpublished'.format(agent['uri']))
+						unpublish_count += 1
 			except KeyError:
 				logging.info('No agents for resource {}'.format(resource['title']))
 		except:
-			logging.info('Resource {} not found'.format(resource_num))
+			logging.warning('Resource {} not found'.format(resource_num))
 			pass
+
+
+	if unpublish_count > 0:
+		logging.info('Number of agents unable to be published: {}. Manually check resources.'.format(unpublish_count))
+	else:
+		exit(1)
