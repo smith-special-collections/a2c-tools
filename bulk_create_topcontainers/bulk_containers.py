@@ -114,14 +114,14 @@ if __name__ == "__main__":
 	# Creating series level archival objects from accessions information
 	new_series_tups = []
 	for count, tup in enumerate(uniq_accession_tups, 1):
-		print(count)
+		logging.debug(count)
 		try:
 			series = create_archival_object(tup)
 			logging.info('New series level archival object created: {}'.format(series))
 			new_series_tup = (series, tup[0])
 			new_series_tups.append(new_series_tup)
 		except:
-			logging.info('Failed to create new series level archival object for Accession {}'.format(tup[0]))
+			logging.warning('Failed to create new series level archival object for Accession {}'.format(tup[0]))
 			pass
 	
 
@@ -134,7 +134,7 @@ if __name__ == "__main__":
 		
 	# Creating new accessions and linking them to the accession
 	for count, top_cont in enumerate(top_containers, 1):
-		print(count)
+		logging.debug(count)
 		try:
 			new_top_cont = create_box(top_cont)
 			logging.info('Creating top container {} for Accession {}'.format(top_cont['container_indicator'], top_cont['accession_id']))
@@ -146,11 +146,12 @@ if __name__ == "__main__":
 			accession = aspace.get(top_cont['accession_uri'])
 			accession['instances'].append(instance)
 			post_accession = aspace.post(accession['uri'], accession)
-			pprint.pprint(post_accession)
+			logging.debug(post_accession)
 		except:
-			logging.info('Failed to create or link new containers to Accession {}'.format(top_cont['accession_id']))
+			logging.warning('Failed to create or link new containers to Accession {}'.format(top_cont['accession_id']))
 			pass
 
+	exit(1)
 
 
 
