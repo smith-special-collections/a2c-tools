@@ -9,20 +9,20 @@ import pandas as pd
 def create_box(top_container):
 	'''Function to create a new top container'''
 	
-	repo_num = top_container['collection_uri'].split('/')[2]	
+	# repo_num = top_container['collection_uri'].split('/')[2]	
 	container_dict = {'active_restrictions': [],
 		'collection': [],
 		'container_locations': [],
 		'container_profile': {},
 		'indicator': str(top_container['container_indicator']),
 		'jsonmodel_type': 'top_container',
-		'repository': {'ref': '/repositories/' + str(repo_num)},
+		'repository': {'ref': '/repositories/' + str(top_container['repo_num'])},
 		'restricted': False,
 		'series': [],
 		'type':'box',
 		'publish': True}
 
-	post_top_container = aspace.post('/repositories/' + str(repo_num) + '/top_containers', container_dict)
+	post_top_container = aspace.post('/repositories/' + str(top_container['repo_num']) + '/top_containers', container_dict)
 
 	return post_top_container['uri']
 
@@ -30,7 +30,7 @@ def create_box(top_container):
 def create_archival_object(accession_tuple):
 	'''Function to create a series level archival object'''
 
-	repo_num = accession_tuple[1].split('/')[2]
+	# repo_num = accession_tuple[1].split('/')[2]
 	archival_object_dict = { "jsonmodel_type":"archival_object",
 		"external_ids":[],
 		"subjects":[],
@@ -51,7 +51,7 @@ def create_archival_object(accession_tuple):
 		"title": "Accession " + accession_tuple[0],
 		"resource": { "ref": accession_tuple[1]}}
 
-	post_archival_object = aspace.post('/repositories/' + str(repo_num) + '/archival_objects', archival_object_dict)
+	post_archival_object = aspace.post('/repositories/' + str(accession_tuple[2]) + '/archival_objects', archival_object_dict)
 
 	return post_archival_object['uri']
 
@@ -98,6 +98,7 @@ if __name__ == "__main__":
 	# Pulling out unique accession ids and resource uris for creation of series archival objects
 	uniq_accession_ids = []
 	for top_cont in top_containers:
+		top_cont['repo_num'] = top_cont['collection_uri'].split('/')[2]
 		if not top_cont['accession_id'] in uniq_accession_ids:
 			uniq_accession_ids.append(top_cont['accession_id'])
 
@@ -106,7 +107,7 @@ if __name__ == "__main__":
 	for i in uniq_accession_ids:
 		for top_cont in top_containers:
 			if i == top_cont['accession_id']:
-				accession_tup = (i, top_cont['collection_uri'])
+				accession_tup = (i, top_cont['collection_uri'], top_cont['repo_num'])
 				if not accession_tup in uniq_accession_tups:
 					uniq_accession_tups.append(accession_tup)
 	
@@ -152,6 +153,5 @@ if __name__ == "__main__":
 			pass
 
 	exit(1)
-
 
 
