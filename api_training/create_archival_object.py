@@ -40,7 +40,7 @@ with open(csv_file, newline="") as csvfile:
         Otherwise an error will be thrown when trying to post '''
         resource_uri = row['resource_uri']
 
-        # This is the basic data structure for creating an archival level object 
+        # This is the basic data structure for creating an archival object 
         archival_object_dict = {"jsonmodel_type":"archival_object",
         "external_ids":[],
         "subjects":[],
