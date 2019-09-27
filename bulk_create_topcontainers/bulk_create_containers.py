@@ -47,7 +47,7 @@ def make_tuples_for_accession_creation(json_contents, unique_ids):
 	for i in unique_ids:
 		for content in json_contents:
 			if i == content['accession_id']:
-				tup = (i, content['collection_uri'], content['repo_num'])
+				tup = (i, content['collection_uri'], content['repo_num'], content['level_of_description'].lower())
 				if not tup in accession_tuples:
 					accession_tuples.append(tup)
 
@@ -90,7 +90,7 @@ def create_archival_object(accession_tuple):
 		"ancestors":[],
 		"instances":[], 
 		"notes":[],
-		"level": "series",
+		"level": accession_tuple[3],
 		"component_id": "Accession " + accession_tuple[0],
 		"title": "Accession " + accession_tuple[0],
 		"resource": { "ref": accession_tuple[1]}}
@@ -125,7 +125,7 @@ def create_boxes_and_link_them_to_accessions(json_contents):
 		try:
 			box = create_box(content)
 			logging.info('Creating top container {} for Accession {}'.format(content['container_indicator'], content['accession_id']))
-			instance = {'instance_type': 'mixed_materials',
+			instance = {'instance_type': content['instance_type'].lower(),
 	                'is_representative': False,
 	                'jsonmodel_type': 'instance',
 	                'sub_container': {'jsonmodel_type': 'sub_container',
