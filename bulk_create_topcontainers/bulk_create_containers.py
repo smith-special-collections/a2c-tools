@@ -7,21 +7,6 @@ import pandas as pd
 import os
 
 
-def load_json_source(json_file_name): 
-	''' Function to open file and return file contents '''
-	file_contents = []
-	with open(json_file_name) as json_file:
-		try:
-			objects = json.load(json_file)
-		except ValueError:
-			logging.info('File not found.')
-	
-	for obj in objects:
-		file_contents.append(obj)
-
-	return file_contents
-
-
 def add_repo_num_and_accession_uri_keys_to_json_contents(json_contents):
 	''' Adding keys to JSON contents that will hold values produced later in the script '''
 	for content in json_contents:
@@ -90,7 +75,7 @@ def create_archival_object(accession_tuple):
 		"ancestors":[],
 		"instances":[], 
 		"notes":[],
-		"level": accession_tuple[3],
+		"level": "series",
 		"component_id": "Accession " + accession_tuple[0],
 		"title": "Accession " + accession_tuple[0],
 		"resource": { "ref": accession_tuple[1]}}
@@ -125,7 +110,7 @@ def create_boxes_and_link_them_to_accessions(json_contents):
 		try:
 			box = create_box(content)
 			logging.info('Creating top container {} for Accession {}'.format(content['container_indicator'], content['accession_id']))
-			instance = {'instance_type': content['instance_type'].lower(),
+			instance = {'instance_type': 'mixed_materials',
 	                'is_representative': False,
 	                'jsonmodel_type': 'instance',
 	                'sub_container': {'jsonmodel_type': 'sub_container',
@@ -144,8 +129,8 @@ if __name__ == "__main__":
 	CONFIGFILE = "archivesspace.cfg"
 
 	argparser = argparse.ArgumentParser()
-	argparser.add_argument("SERVERCFG", nargs="?", default="DEFAULT", help="Name of the server configuration section e.g. 'production' or 'testing'. Edit archivesspace.cfg to add a server configuration section. If no configuration is specified, the default settings will be used host=localhost user=admin pass=admin.")
-	argparser.add_argument("CSVname", nargs="?", default="DEFAULT", help="Name of the CSV spreadsheet, e.g, 'bulk_container_spreadsheet.csv. Note: It must be in the same directory as this code file.")
+	argparser.add_argument("SERVERCFG", default="DEFAULT", help="Name of the server configuration section e.g. 'production' or 'testing'. Edit archivesspace.cfg to add a server configuration section. If no configuration is specified, the default settings will be used host=localhost user=admin pass=admin.")
+	argparser.add_argument("CSVname", default="DEFAULT", help="Name of the CSV spreadsheet, e.g, 'bulk_container_spreadsheet.csv. Note: It must be in the same directory as this code file.")
 	cliArguments = argparser.parse_args()
 
 	aspace = archivesspace.ArchivesSpace()
@@ -160,24 +145,15 @@ if __name__ == "__main__":
 	# Reads CSV file
 	csv_file = pd.DataFrame(pd.read_csv(file_name, sep = ",", header = 0, index_col = False))
 	
-	# Creates new JSON file name
-	csv_split = file_name.split('.')
-	json_file = csv_split[0] + ".json"
-
-	# Transforms CSV into JSON for parsing
-	csv_file.to_json(json_file, orient = "records", date_format = "epoch", double_precision = 10, force_ascii = True, date_unit = "ms", default_handler = None)
-
-	# Opening JSON file 
-	json_contents = load_json_source(json_file)	
+	# Transforms CSV file into a list of Python dictionary objects
+	list_of_dicts = csv_file.to_dict('records')
 
 	# Creating new series level archival object records for accessions data and linking newly created top containers to them
-	add_repo_num_and_accession_uri_keys_to_json_contents(json_contents)
-	unique_ids = extract_unique_accession_ids(json_contents)
-	tuples = make_tuples_for_accession_creation(json_contents, unique_ids)
-	make_archival_objects_and_put_uris_into_json_contents(json_contents, tuples)
-	create_boxes_and_link_them_to_accessions(json_contents)                   	
+	add_repo_num_and_accession_uri_keys_to_json_contents(list_of_dicts)
+	unique_ids = extract_unique_accession_ids(list_of_dicts)
+	id_coluri_reponum_descriplevel = make_tuples_for_accession_creation(list_of_dicts, unique_ids)
+	make_archival_objects_and_put_uris_into_json_contents(list_of_dicts, id_coluri_reponum_descriplevel)
+	create_boxes_and_link_them_to_accessions(list_of_dicts)                   	
 
-	# Deleting JSON file as no longer of any use
-	os.system('rm ' + json_file)
 
 
