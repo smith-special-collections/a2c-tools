@@ -225,20 +225,9 @@ if __name__ == "__main__":
 	# Reads CSV file
 	csv_file = pd.DataFrame(pd.read_csv(FILE, sep = ",", header = 0, index_col = False))
 	
-	# Creates new JSON file name
-	JSON_FILE = FILE[:-4] + ".json"
-
-	# Transforms CSV into JSON for parsing
-	csv_file.to_json(JSON_FILE, orient = "records", date_format = "epoch", double_precision = 10, force_ascii = True, date_unit = "ms", default_handler = None)
-
-	# Opens JSON file
-	with open(JSON_FILE) as jsonfile:
-		try:
-			accessions = json.load(jsonfile)
-		except ValueError:
-			logging.info('File not found')
-			exit(1)
-
+	# Transforms CSV file into a list of Python dictionary objects
+	accessions = csv_file.to_dict('records')
+	
 	# Iterates over individual accessions
 	errors = {}
 	errors['rows'] = []
