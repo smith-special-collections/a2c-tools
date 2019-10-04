@@ -5,4 +5,4 @@ In order to run, the following arguments are passed to the command line:
 - repo number
 - resource number
 
-Tested on Python 3.7.4.
+Tested on Python 3.7.4 and requires archivesspace module.
