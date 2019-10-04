@@ -3,7 +3,6 @@ import pprint
 import argparse
 import logging
 import json
-import csv
 import unidecode
 import re
 import pandas as pd
@@ -125,7 +124,8 @@ if __name__ == "__main__":
 	CONFIGFILE = "archivesspace.cfg"
 
 	argparser = argparse.ArgumentParser()
-	argparser.add_argument("SERVERCFG", nargs="?", default="DEFAULT", help="Name of the server configuration section e.g. 'production' or 'testing'. Edit archivesspace.cfg to add a server configuration section. If no configuration is specified, the default settings will be used host=localhost user=admin pass=admin.")
+	argparser.add_argument("SERVERCFG", default="DEFAULT", help="Name of the server configuration section e.g. 'production' or 'testing'. Edit archivesspace.cfg to add a server configuration section. If no configuration is specified, the default settings will be used host=localhost user=admin pass=admin.")
+	argparser.add_argument("CSVFILE", default="DEFAULT", help="Name of the CSV file with agents data.")
 	cliArguments = argparser.parse_args()
 
 	aspace = archivesspace.ArchivesSpace()
@@ -134,20 +134,12 @@ if __name__ == "__main__":
 
 	logging.basicConfig(level=logging.INFO)
 
+	csv = cliArguments.CSVFILE
 
-	# csv = pd.read_csv('crosschecked_resources.csv')
 	
-	''' Code to create MRBC JSON file '''
-	csv_file = pd.DataFrame(pd.read_csv('second_pass.csv', sep = ",", header = 0, index_col = False))
-	csv_file.to_json("mrbc_to_aspace.json", orient = "records", date_format = "epoch", double_precision = 10, force_ascii = True, date_unit = "ms", default_handler = None)
-
-	with open("mrbc_to_aspace.json") as json_file:
-		try:
-			resources = json.load(json_file)
-		except ValueError:
-			logging.info('File not found')
-			exit(1)
-
+	# Code to create MRBC JSON object 
+	csv_file = pd.DataFrame(pd.read_csv(csv, sep = ",", header = 0, index_col = False))
+	resources = csv_file.to_dict('records')
 
 	# Extracting the keys that contain person agent data to be created
 	keys = []
