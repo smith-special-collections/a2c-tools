@@ -2,7 +2,6 @@ from archivesspace import archivesspace
 import pprint
 import argparse
 import logging
-import json
 import pandas as pd
 import datetime
 
@@ -209,8 +208,8 @@ if __name__ == "__main__":
 	CONFIGFILE = "archivesspace.cfg"
 
 	argparser = argparse.ArgumentParser()
-	argparser.add_argument("SERVERCFG", nargs="?", default="DEFAULT", help="Name of the server configuration section e.g. 'production' or 'testing'. Edit archivesspace.cfg to add a server configuration section. If no configuration is specified, the default settings will be used host=localhost user=admin pass=admin.")
-	argparser.add_argument("CSVname", nargs="?", default="DEFAULT", help="Name of the CSV spreadsheet, e.g, 'duplaix.csv. Note: It must be in the same directory as this code file.")
+	argparser.add_argument("SERVERCFG", default="DEFAULT", help="Name of the server configuration section e.g. 'production' or 'testing'. Edit archivesspace.cfg to add a server configuration section. If no configuration is specified, the default settings will be used host=localhost user=admin pass=admin.")
+	argparser.add_argument("CSVname", default="DEFAULT", help="Name of the CSV spreadsheet, e.g, 'duplaix.csv. Note: It must be in the same directory as this code file.")
 	cliArguments = argparser.parse_args()
 
 	aspace = archivesspace.ArchivesSpace()
