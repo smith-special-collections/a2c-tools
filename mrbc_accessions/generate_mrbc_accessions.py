@@ -4,6 +4,7 @@ import argparse
 import logging
 import pandas as pd
 import datetime
+import re
 
 
 RELATOR_DICT = {
