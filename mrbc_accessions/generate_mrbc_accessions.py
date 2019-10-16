@@ -1,9 +1,7 @@
 from archivesspace import archivesspace
-import pprint
 import argparse
 import logging
 import datetime
-import re
 import csv
 
 
@@ -229,7 +227,6 @@ if __name__ == "__main__":
 		reader = csv.DictReader(csvfile)
 
 		for row in reader:
-
 			if row['complete'] == 'TRUE':
 				record = make_accession_record(row)
 				try:
