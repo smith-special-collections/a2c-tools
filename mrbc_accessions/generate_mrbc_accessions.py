@@ -2,9 +2,9 @@ from archivesspace import archivesspace
 import pprint
 import argparse
 import logging
-import pandas as pd
 import datetime
 import re
+import csv
 
 
 RELATOR_DICT = {
@@ -18,6 +18,7 @@ RELATOR_DICT = {
 
 DATE = datetime.date.today()
 DATE = DATE.__str__()
+
 
 def make_accession_record(accession):
 	'''Function to make MRBC accessions connected to parent lots'''
@@ -83,11 +84,14 @@ def make_accession_record(accession):
 	except:
 		pass
 	try:
-		i3 = str(accession['id_3']).split('.')
-		acc_dict['id_3'] = i3[1]
-		if len(acc_dict['id_3']) < 4:
-			while len(acc_dict['id_3']) < 4:
-				acc_dict['id_3'] = acc_dict['id_3'] + '0'
+		if '.' in str(accession['id_3']):
+			i3 = str(accession['id_3']).split('.')
+			acc_dict['id_3'] = i3[1]
+			if len(acc_dict['id_3']) < 4:
+				while len(acc_dict['id_3']) < 4:
+					acc_dict['id_3'] = acc_dict['id_3'] + '0'
+		else:
+			acc_dict['id_3'] = str(accession['id_3'])
 	except:
 		pass
 
@@ -138,7 +142,7 @@ def make_accession_record(accession):
 
 	# Acquisition Type
 	try:
-		acc_dict['acquisition_type'] = accession['acquisition_type'].lower()
+		acc_dict['acquisition_type'] = accession['\ufeffacquisition_type'].lower()
 	except:
 		pass
 	
@@ -159,15 +163,14 @@ def make_accession_record(accession):
 			else:
 				relator2 = ""
 
-
 	agent1 = {}
 	agent1['terms'] = []
 	if accession['agent_uri1'] != None:
 		agent1['ref'] = accession['agent_uri1']
 		if relator1 != "":
 			agent1['relator'] = relator1
-		if accession['linked_agent_role1'] != None:
-			agent1['role'] = accession['linked_agent_role1'].lower()
+		if accession['linked_agent_role1'].strip() != None:
+			agent1['role'] = accession['linked_agent_role1'].strip().lower()
 
 		acc_dict['linked_agents'].append(agent1)
 
@@ -177,8 +180,8 @@ def make_accession_record(accession):
 		agent2['ref'] = accession['agent_uri2']
 		if relator2 != "":
 			agent2['relator'] = relator1
-		if accession['linked_agent_role2'] != None:
-			agent2['role'] = accession['linked_agent_role2'].lower()
+		if accession['linked_agent_role2'].strip() != None:
+			agent2['role'] = accession['linked_agent_role2'].strip().lower()
 
 		acc_dict['linked_agents'].append(agent2)
 
@@ -219,33 +222,21 @@ if __name__ == "__main__":
 
 	logging.basicConfig(level=logging.INFO)
 
-	FILE = cliArguments.CSVname
-
+	csv_file = cliArguments.CSVname
 
 	# Reads CSV file
-	csv_file = pd.DataFrame(pd.read_csv(FILE, sep = ",", header = 0, index_col = False))
-	
-	# Transforms CSV file into a list of Python dictionary objects
-	accessions = csv_file.to_dict('records')
-	
-	# Iterates over individual accessions
-	errors = {}
-	errors['rows'] = []
+	with open(csv_file, encoding="utf8", errors="ignore") as csvfile:
+		reader = csv.DictReader(csvfile)
 
-	count = 0
-	for accession in accessions:
-		if accession['complete'] == True:
-			count += 1
-			logging.info(count)
-			record = make_accession_record(accession)
-			pprint.pprint(record)	
-			try:
-				post = aspace.post('/repositories/3/accessions', record)
-				logging.info('Accession record created for {}'.format(accession['title']))
-			except Exception as e:
-				error_string = 'Unable to post accession because of metadata errors. Check data for {}'.format(accession['title'])
-				logging.info(error_string)
-				errors['rows'].append(e)
+		for row in reader:
 
-	pprint.pprint(errors['rows'])
+			if row['complete'] == 'TRUE':
+				record = make_accession_record(row)
+				try:
+					post = aspace.post('/repositories/3/accessions', record)
+					logging.info('Accession record created for {}'.format(row['title']))
+				except:
+					logging.warning('Failure to create accession record for {}'.format(row['title']))
+	
+
 
