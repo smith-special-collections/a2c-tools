@@ -176,14 +176,22 @@ if __name__ == "__main__":
 					record_dict['begin'] = ""
 		else:
 			record_dict['begin'] = ""
-		record_dict['file_version_1'] = ""
-		record_dict['file_version_2'] = ""
+		record_dict['uri'] = record['uri']
+		record_dict['file_version_1_uri'] = ""
+		record_dict['file_version1_caption'] = ""
+		record_dict['file_version_2_uri'] = ""
+		record_dict['file_version2_caption'] = ""
+		record_dict['hierarchy'] = ""
+		record_dict['level'] = ""
+		record_dict['digital_object_title'] = ""
+		record_dict['digital_object_id'] = ""
+		record_dict['publish'] = ""
 
 		records.append(record_dict)
 
 
 	with open('digital_object_template.csv', mode='w') as template:
-		fieldnames = ['resource', 'title', 'begin', 'file_version_1', 'file_version_2']
+		fieldnames = ['resource', 'title', 'begin', 'uri', 'hierarchy', 'level', 'digital_object_title', 'digital_object_id', 'publish', 'file_version_1_uri', 'file_version1_caption', 'file_version_2_uri', 'file_version2_caption']
 		template_writer = csv.DictWriter(template, fieldnames=fieldnames)
 		template_writer.writeheader()
 		template_writer.writerows(records)
