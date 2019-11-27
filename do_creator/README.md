@@ -5,3 +5,7 @@ do_csv_maker.py takes a repository number and resource number as required inputs
 The generated CSV is called digital_object_template.csv.
 
 ```python3 do_csv_maker.py local 2 751``` 
+
+do_file_version.py takes the name (or path) of a CSV as required input and creates from the CSV data digital objects and links them to archival objects.  
+
+```python3 do_file_version.py local do_template.csv```
