@@ -4,6 +4,20 @@ import argparse
 import logging
 import json
 
+def check_for_note(aspace_record):
+	checker = 0
+	for note in record['notes']:
+		try:
+			if note['type'] == 'accessrestrict':
+				if 'New Neilson' in note['subnotes'][0]['content']:
+					checker += 1
+		except:
+			pass
+
+	if checker > 1:
+		pass
+	else:
+		return record
 
 
 if __name__ == "__main__":
@@ -44,24 +58,25 @@ if __name__ == "__main__":
                 	'publish': True}],
   					'type': 'accessrestrict'}
 
-	
-	count = 0
+	counter = 0
 	fails = {}
 	fails['rows'] = []
 	for resource in resources:
 		record = aspace.get('/repositories/' + str(repo_num) + '/resources/' + str(resource))
-		record['notes'].append(new_conditions_note)
-		try:
-			count += 1
-			print(count)
-			update_record = aspace.post(record['uri'], record)
-			logging.info('Finding aid for {} updated with new note'.format(record['title']))
-		except:
-			logging.warning('Note could not be added to finding aid for {}'.format(record['title']))
-			fails['rows'].append(record['title'])
-
+		check = check_for_note(record)
+		if check != None:
+			check['notes'].append(new_conditions_note)
+			try:
+				counter += 1
+				update_record = aspace.post(record['uri'], record)
+				logging.info('Finding aid for {} updated with new note'.format(record['title']))
+			except:
+				logging.warning('Note could not be added to finding aid for {}'.format(record['title']))
+				fails['rows'].append(record['title'])
+ 
+ 
+	print('How many Resources successfully had notes added {}'.format(counter))				
 	print('How many Resources failed to update with new note: {}'.format(len(fails['rows'])))
-
 	with open('manually_add_note.txt', 'w') as outfile:
 		json.dump(fails, outfile)
 
