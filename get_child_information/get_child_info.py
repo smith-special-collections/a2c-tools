@@ -21,6 +21,10 @@ def getRecordInfo(aspace_record):
 	except:
 		pass
 	try:
+		obj['publish'] = aspace_record['publish']
+	except:
+		pass
+	try:
 		obj['top_container'] = aspace_record['instances'][0]['sub_container']['top_container']['ref']
 	except:
 		obj['top_container'] = ""
