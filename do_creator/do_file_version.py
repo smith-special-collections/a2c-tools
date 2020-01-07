@@ -85,11 +85,11 @@ if __name__ == "__main__":
 			if row['hierarchy'] == 'item':
 				repo_num = row['uri'].split('/')[2]
 				new_do = create_do(row, repo_num)
-				if len(str(row['file_version1_uri'])) != 0:
-					new_file_version = create_file_version(row['file_version1_uri'], row['file_version1_caption'])
+				if len(str(row['file_version_1_uri'])) != 0:
+					new_file_version = create_file_version(row['file_version_1_uri'], row['file_version_1_caption'])
 					new_do['file_versions'].append(new_file_version)
-				if len(str(row['file_version2_uri'])) != 0:
-					new_file_version = create_file_version(row['file_version2_uri'], row['file_version2_caption'])
+				if len(str(row['file_version_2_uri'])) != 0:
+					new_file_version = create_file_version(row['file_version_2_uri'], row['file_version_2_caption'])
 					new_do['file_versions'].append(new_file_version)
 				
 				# Creating digital object and linking it as an instance of its archival object
