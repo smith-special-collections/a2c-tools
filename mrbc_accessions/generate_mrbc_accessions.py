@@ -66,7 +66,7 @@ def make_accession_record(accession):
 
 	# Id
 	try:
-		acc_dict['id_0'] = str(int(accession['id_0']))
+		acc_dict['id_0'] = str(int(accession['id_0'])).strip()
 	except:
 		pass
 	try:
@@ -89,7 +89,7 @@ def make_accession_record(accession):
 				while len(acc_dict['id_3']) < 4:
 					acc_dict['id_3'] = acc_dict['id_3'] + '0'
 		else:
-			acc_dict['id_3'] = str(accession['id_3'])
+			acc_dict['id_3'] = str(accession['id_3']).strip()
 	except:
 		pass
 
@@ -102,15 +102,15 @@ def make_accession_record(accession):
 	extent_dict = {}
 	extent_dict['jsonmodel_type'] = 'extent'
 	try:
-		extent_dict['extent_type'] = accession['extent_type'].lower() + 's'
+		extent_dict['extent_type'] = accession['extent_type'].lower().strip() + 's'
 	except:
 		pass
 	try:
-		extent_dict['number'] = str(int(accession['extent']))
+		extent_dict['number'] = str(int(accession['extent'])).strip()
 	except:
 		pass
 	try:
-		extent_dict['portion'] = accession['portion'].lower()
+		extent_dict['portion'] = accession['portion'].lower().strip()
 	except:
 		pass
 
@@ -123,15 +123,15 @@ def make_accession_record(accession):
 	date_dict = {}
 
 	if accession['date_type'] != None and accession['begin_date'] != None:
-		if accession['date_type'].lower() == 'inclusive':
+		if accession['date_type'].lower().strip() == 'inclusive':
 			date_dict['end'] = accession['end_date']
 		if len(str(accession['begin_date'])) > 4 or len(str(accession['begin_date'])) < 4:
 			date_dict['begin'] = '0000'
 		else:
 			date_dict['begin'] = str(int(accession['begin_date']))
-		if accession['certainty'] != None and (accession['certainty'].lower() == 'approximate' or accession['certainty'].lower() == 'inferred' or accession['certainty'].lower() == 'questionable'):
-			date_dict['certainty'] = accession['certainty']
-		date_dict['date_type'] = accession['date_type'].lower()
+		if accession['certainty'] != None and (accession['certainty'].lower().strip() == 'approximate' or accession['certainty'].lower().strip() == 'inferred' or accession['certainty'].lower().strip() == 'questionable'):
+			date_dict['certainty'] = accession['certainty'].strip()
+		date_dict['date_type'] = accession['date_type'].lower().strip()
 		date_dict['calendar'] = 'gregorian'
 		date_dict['era'] = 'ce'
 		date_dict['jsonmodel_type'] = 'date'
@@ -140,7 +140,7 @@ def make_accession_record(accession):
 
 	# Acquisition Type
 	try:
-		acc_dict['acquisition_type'] = accession['\ufeffacquisition_type'].lower()
+		acc_dict['acquisition_type'] = accession['\ufeffacquisition_type'].lower().strip()
 	except:
 		pass
 	
@@ -149,46 +149,52 @@ def make_accession_record(accession):
 
 	if accession['agent_type1'] != None:
 		for key in RELATOR_DICT.keys():
-			if key == accession['agent_type1'].lower():
+			if key == accession['agent_type1'].lower().strip():
 				relator1 = RELATOR_DICT[key]
 			else:
 				relator1 = ""
 
 	if accession['agent_type2'] != None:
 		for key in RELATOR_DICT.keys():
-			if key == accession['agent_type2'].lower():
+			if key == accession['agent_type2'].lower().strip():
 				relator2 = RELATOR_DICT[key]
 			else:
 				relator2 = ""
 
 	agent1 = {}
 	agent1['terms'] = []
-	if accession['agent_uri1'] != None:
-		agent1['ref'] = accession['agent_uri1']
-		if relator1 != "":
-			agent1['relator'] = relator1
-		if accession['linked_agent_role1'].strip() != None:
-			agent1['role'] = accession['linked_agent_role1'].strip().lower()
+	try:
+		if accession['agent_uri1'][0] == '/':
+			agent1['ref'] = accession['agent_uri1'].strip()
+			if relator1 != "":
+				agent1['relator'] = relator1
+			if accession['linked_agent_role1'].strip() != None:
+				agent1['role'] = accession['linked_agent_role1'].lower().strip()
 
-		acc_dict['linked_agents'].append(agent1)
+			acc_dict['linked_agents'].append(agent1)
+	except:
+		pass
 
 	agent2 = {}
 	agent2['terms'] = []
-	if accession['agent_uri2'] != None:
-		agent2['ref'] = accession['agent_uri2']
-		if relator2 != "":
-			agent2['relator'] = relator1
-		if accession['linked_agent_role2'].strip() != None:
-			agent2['role'] = accession['linked_agent_role2'].strip().lower()
+	try:
+		if accession['agent_uri2'][0] == '/':
+			agent2['ref'] = accession['agent_uri2'].strip()
+			if relator2 != "":
+				agent2['relator'] = relator1
+			if accession['linked_agent_role2'].strip() != None:	
+				agent2['role'] = accession['linked_agent_role2'].lower().strip()
 
-		acc_dict['linked_agents'].append(agent2)
+			acc_dict['linked_agents'].append(agent2)
+	except:
+		pass
 
 	# Payments module
 	payment_summary = {}
 	payment_summary['payments'] = []
 	payment_info = {}
 	if accession['total_price'] != None:
-		payment_summary['total_price'] = str(accession['total_price'])
+		payment_summary['total_price'] = str(accession['total_price']).strip()
 		payment_summary['currency'] = 'USD'
 		payment_summary['in_lot'] = False
 		payment_summary['jsonmodel_type'] = 'payment_summary'
