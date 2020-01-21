@@ -4,106 +4,15 @@ import argparse
 import logging
 import csv
 
-
-def getRecordInfo(aspace_record):
-	obj = {}	
-	
-	try:
-		obj['title'] = aspace_record['title']
-	except:
-		pass
-	try:
-		obj['level'] = aspace_record['level']
-	except:
-		pass
-	try:
-		obj['dates'] = aspace_record['dates']
-	except:
-		pass
-	try:
-		obj['publish'] = aspace_record['publish']
-	except:
-		pass
-	try:
-		obj['top_container'] = aspace_record['instances'][0]['sub_container']['top_container']['ref']
-	except:
-		obj['top_container'] = ""
-
-	obj['uri'] = aspace_record['uri']
-
-	return obj
-
-
-def getSeries(resource_num, repo_num):
-	'''Returns first level down children of given Resource'''
-
-	logging.debug('Retrieving Series level children of Resource %s' % resource_num)
-	series_lst = []
-
-	record = aspace.get('/repositories/'+ str(repo_num) +'/resources/' + str(resource_num) + '/tree')
-
-	if record['children']:
-		for child in record['children']:
-			logging.debug('Adding each first level child of Resource %s to a list' % resource_num)
-			series_lst.append(child)
-
-	return series_lst
-
-
-def getSeriesUri(series):
-	return series['record_uri']
-
-
-def getChildUri(child):
-	logging.debug('Returning URI for Archival Object %s' % child['record_uri'])
-	return child['record_uri']
-
-
-def getChildUris(series): 
-	'''Returns list of child URIs for the child of a parent Resource. Assumes searching through a single series in a record group'''
-
-	logging.debug('Retrieving URIs for each child of Series %s passed' % series)
-	child_uris = []  # Starting list to append to
-	children = series['children']  # Children of the series, which is itself the child of a record group
-
-	child_uris.append(getSeriesUri(series))
-
-	for child in children:
-		child_uris.append(getChildUri(child))
-		if child['children']:
-			for child in child['children']:
-				child_uris.append(getChildUri(child))
-				if child['children']:
-					for child in child['children']:
-						child_uris.append(getChildUri(child))
-						if child['children']:
-							for child in child['children']:
-								child_uris.append(getChildUri(child))
-								if child['children']:
-									for child in child['children']:
-										child_uris.append(getChildUri(child))
-										if child['children']:
-											for child in child['children']:
-												child_uris.append(getChildUri(child))
-												if child['children']:
-													for child in child['children']:
-														child_uris.append(getChildUri(child))
-
-
-	return child_uris
-
-
-def getAllResourceUris(resource_num, repo):
-	'''Calls getSeries and getChildUris to return all the Archival Object URIs for a resource'''
-
-	resource = aspace.get('/repositories/' + str(repo) + '/resources/' + str(resource_num))
-	uri_lst = []
-	uri_lst.append(resource['uri'])
-	hierarchy = getSeries(resource_num, repo)
-	for level in hierarchy:
-		uri_lst.extend(getChildUris(level))
-
-	return uri_lst
+def findKey(d, key):
+    """Find all instances of key."""
+    if key in d:
+        yield d[key]
+    for k in d:
+        if isinstance(d[k], list) and k == 'children':
+            for i in d[k]:
+                for j in findKey(i, key):
+                    yield j
 
 
 if __name__ == "__main__":
@@ -125,10 +34,15 @@ if __name__ == "__main__":
 	repo = cliArguments.REPO
 	resource = cliArguments.RESOURCE
 
-
-	# Get children info
-	uris = getAllResourceUris(resource, repo)
+	
 	logging.info('Getting all URIs for Resource {}'.format(resource))
+	
+	endpoint = '/repositories/' + repo + '/resources/' + resource + '/tree'
+	output = aspace.get(endpoint)
+	uris = []
+	for value in findKey(output, 'record_uri'):
+		if 'archival_objects' in value:
+			uris.append(value)
 	
 	data = {}
 	data['rows'] = []
