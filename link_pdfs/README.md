@@ -10,6 +10,10 @@ FROM resource
 WHERE identifier IS NOT NULL
 ```
 
+Command to run:
 
+```
+python3 link_pdfs.py local file_path
+```
 
 
