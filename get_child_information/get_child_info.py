@@ -15,6 +15,35 @@ def findKey(d, key):
                     yield j
 
 
+def getRecordInfo(aspace_record):
+	obj = {}	
+	
+	try:
+		obj['title'] = aspace_record['title']
+	except KeyError:
+		pass
+	try:
+		obj['level'] = aspace_record['level']
+	except KeyError:
+		pass
+	try:
+		obj['dates'] = aspace_record['dates']
+	except KeyError:
+		pass
+	try:
+		obj['publish'] = aspace_record['publish']
+	except KeyError:
+		pass
+	try:
+		obj['top_container'] = aspace_record['instances'][0]['sub_container']['top_container']['ref']
+	except IndexError:
+		obj['top_container'] = ""
+
+	obj['uri'] = aspace_record['uri']
+
+	return obj
+
+
 if __name__ == "__main__":
 
 	CONFIGFILE = "archivesspace.cfg"
