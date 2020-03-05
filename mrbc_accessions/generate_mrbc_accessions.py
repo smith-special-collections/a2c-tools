@@ -238,8 +238,8 @@ if __name__ == "__main__":
 				try:
 					post = aspace.post('/repositories/3/accessions', record)
 					logging.info('Accession record created for {}'.format(row['title']))
-				except:
-					logging.warning('Failure to create accession record for {}'.format(row['title']))
+				except Exception as e:
+					logging.warning('Failure to create accession record for {}: {}'.format(row['title'], e))
 	
 
 
