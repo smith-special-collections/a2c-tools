@@ -50,29 +50,29 @@ def make_accession_record(accession):
 		rel_acc['ref'] = accession['related_accessions']
 		acc_dict['related_accessions'].append(rel_acc)
 	except:
-		pass
+		continue
 				 
 	# Provenance
 	if accession['provenance'] != None:
 		acc_dict['provenance'] = accession['provenance']
 	else:
-		pass
+		continue
 
 	# Resource type
 	try:
 		acc_dict['resource_type'] = accession['resource_type'].lower()
 	except:
-		pass
+		continue
 
 	# Id
 	try:
 		acc_dict['id_0'] = str(int(accession['id_0'])).strip()
 	except:
-		pass
+		continue
 	try:
 		acc_dict['id_1'] = accession['id_1']
 	except:
-		pass
+		continue
 	try:
 		i2 = str(accession['id_2']).split('.')
 		acc_dict['id_2'] = i2[1]
@@ -80,7 +80,7 @@ def make_accession_record(accession):
 			while len(acc_dict['id_2']) < 4:
 				acc_dict['id_2'] = acc_dict['id_2'] + '0'
 	except:
-		pass
+		continue
 	try:
 		if '.' in str(accession['id_3']):
 			i3 = str(accession['id_3']).split('.')
@@ -91,7 +91,7 @@ def make_accession_record(accession):
 		else:
 			acc_dict['id_3'] = str(accession['id_3']).strip()
 	except:
-		pass
+		continue
 
 	# Content Description
 	if accession['content_description'] != None:
@@ -104,15 +104,15 @@ def make_accession_record(accession):
 	try:
 		extent_dict['extent_type'] = accession['extent_type'].lower().strip() + 's'
 	except:
-		pass
+		continue
 	try:
 		extent_dict['number'] = str(int(accession['extent'])).strip()
 	except:
-		pass
+		continue
 	try:
 		extent_dict['portion'] = accession['portion'].lower().strip()
 	except:
-		pass
+		continue
 
 	# Ensures extents array has all the required fields, otherwise an error will be raised when trying to post	
 	if len(extent_dict) > 3:
@@ -142,7 +142,7 @@ def make_accession_record(accession):
 	try:
 		acc_dict['acquisition_type'] = accession['\ufeffacquisition_type'].lower().strip()
 	except:
-		pass
+		continue
 	
 	# Linked agents
 	acc_dict['linked_agents'] = []
@@ -173,7 +173,7 @@ def make_accession_record(accession):
 
 			acc_dict['linked_agents'].append(agent1)
 	except:
-		pass
+		continue
 
 	agent2 = {}
 	agent2['terms'] = []
@@ -187,7 +187,7 @@ def make_accession_record(accession):
 
 			acc_dict['linked_agents'].append(agent2)
 	except:
-		pass
+		continue
 
 	# Payments module
 	payment_summary = {}
