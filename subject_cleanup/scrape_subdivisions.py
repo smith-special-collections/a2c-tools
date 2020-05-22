@@ -1,5 +1,5 @@
 import argparse
-import json
+import csv
 import logging
 from pprint import pprint as pp
 import requests
@@ -41,28 +41,27 @@ if __name__ == "__main__":
 	starting_url = 'http://id.loc.gov/search/?q=memberOf:http://id.loc.gov/authorities/subjects/collection_Subdivisions&start=1'
 	first_req = requests.get(starting_url).text
 
-	soup = BeautifulSoup(first_req, 'html.parser')
-
-	subdivisions = {}
-	subdivisions['data'] = []	
+	soup = BeautifulSoup(first_req, 'html.parser')	
+	
 	subs = get_subdivisions_from_html(soup)
 	next_url = get_next_query(soup)
 	
-	subdivisions['data'].extend(subs)
+	subdivisions = []
+	subdivisions.extend(subs)
 	
 	while next_url != None:
 		r = requests.get(next_url).text
 		soup = BeautifulSoup(r, 'html.parser')
 		subs = get_subdivisions_from_html(soup)
 		if len(subs) != 0:
-			subdivisions['data'].extend(subs)
+			subdivisions.extend(subs)
 		next_url = get_next_query(soup)
 
 	
-	with open('lc_subdivisions.json', 'w') as json_file:
-		json.dump(subdivisions, json_file)
-
-	pp(len(subdivisions['data']))
-
+	# Write to CSV
+	with open('lc_subdivisions.csv', 'w', encoding='utf8', newline='') as output_file:
+	    fc = csv.DictWriter(output_file, fieldnames=subdivisions[0].keys(),)
+	    fc.writeheader()
+	    fc.writerows(subdivisions)
 
 
