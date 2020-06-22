@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
 	successes = 0
 	fails = []
-	for match in matches['rows'][10:]:
+	for match in matches['rows']:
 		sub_id = match['uri'].split('/')[-1]
 		try:
 			rec = aspace.subjects(sub_id).json()
