@@ -49,38 +49,36 @@ def make_accession_record(accession):
 	try:
 		rel_acc['ref'] = accession['related_accessions']
 		acc_dict['related_accessions'].append(rel_acc)
-	except:
-		continue
+	except Exception as e:
+		logging.error(e)
 				 
 	# Provenance
 	if accession['provenance'] != None:
 		acc_dict['provenance'] = accession['provenance']
-	else:
-		continue
 
 	# Resource type
 	try:
 		acc_dict['resource_type'] = accession['resource_type'].lower()
-	except:
-		continue
+	except Exception as e:
+		logging.error(e)
 
 	# Id
 	try:
 		acc_dict['id_0'] = str(int(accession['id_0'])).strip()
-	except:
-		continue
+	except Exception as e:
+		logging.error(e)
 	try:
 		acc_dict['id_1'] = accession['id_1']
-	except:
-		continue
+	except Exception as e:
+		logging.error(e)
 	try:
 		i2 = str(accession['id_2']).split('.')
 		acc_dict['id_2'] = i2[1]
 		if len(acc_dict['id_2']) < 4:
 			while len(acc_dict['id_2']) < 4:
 				acc_dict['id_2'] = acc_dict['id_2'] + '0'
-	except:
-		continue
+	except Exception as e:
+		logging.error(e)
 	try:
 		if '.' in str(accession['id_3']):
 			i3 = str(accession['id_3']).split('.')
@@ -90,8 +88,8 @@ def make_accession_record(accession):
 					acc_dict['id_3'] = acc_dict['id_3'] + '0'
 		else:
 			acc_dict['id_3'] = str(accession['id_3']).strip()
-	except:
-		continue
+	except Exception as e:
+		logging.error(e)
 
 	# Content Description
 	if accession['content_description'] != None:
@@ -103,16 +101,16 @@ def make_accession_record(accession):
 	extent_dict['jsonmodel_type'] = 'extent'
 	try:
 		extent_dict['extent_type'] = accession['extent_type'].lower().strip() + 's'
-	except:
-		continue
+	except Exception as e:
+		logging.error(e)
 	try:
 		extent_dict['number'] = str(int(accession['extent'])).strip()
-	except:
-		continue
+	except Exception as e:
+		logging.error(e)
 	try:
 		extent_dict['portion'] = accession['portion'].lower().strip()
-	except:
-		continue
+	except Exception as e:
+		logging.error(e)
 
 	# Ensures extents array has all the required fields, otherwise an error will be raised when trying to post	
 	if len(extent_dict) > 3:
@@ -141,8 +139,8 @@ def make_accession_record(accession):
 	# Acquisition Type
 	try:
 		acc_dict['acquisition_type'] = accession['\ufeffacquisition_type'].lower().strip()
-	except:
-		continue
+	except Exception as e:
+		logging.error(e)
 	
 	# Linked agents
 	acc_dict['linked_agents'] = []
@@ -172,8 +170,8 @@ def make_accession_record(accession):
 				agent1['role'] = accession['linked_agent_role1'].lower().strip()
 
 			acc_dict['linked_agents'].append(agent1)
-	except:
-		continue
+	except Exception as e:
+		logging.error(e)
 
 	agent2 = {}
 	agent2['terms'] = []
@@ -186,8 +184,8 @@ def make_accession_record(accession):
 				agent2['role'] = accession['linked_agent_role2'].lower().strip()
 
 			acc_dict['linked_agents'].append(agent2)
-	except:
-		continue
+	except Exception as e:
+		logging.error(e)
 
 	# Payments module
 	payment_summary = {}
