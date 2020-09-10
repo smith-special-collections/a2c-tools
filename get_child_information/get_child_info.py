@@ -21,19 +21,19 @@ def getRecordInfo(aspace_record):
 	try:
 		obj['title'] = aspace_record['title']
 	except KeyError:
-		pass
+		continue
 	try:
 		obj['level'] = aspace_record['level']
 	except KeyError:
-		pass
+		continue
 	try:
 		obj['dates'] = aspace_record['dates']
 	except KeyError:
-		pass
+		continue
 	try:
 		obj['publish'] = aspace_record['publish']
 	except KeyError:
-		pass
+		continue
 	try:
 		obj['top_container'] = aspace_record['instances'][0]['sub_container']['top_container']['ref']
 	except IndexError:
@@ -82,7 +82,7 @@ if __name__ == "__main__":
 
 
 	# Make spreadsheet	
-	keys = data['rows'][1].keys()
+	keys = data['rows'][0].keys()
 	outpath = 'resource' + resource + '.csv'
 	
 	with open(outpath, 'w') as f:
