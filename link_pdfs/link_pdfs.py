@@ -90,7 +90,7 @@ def make_matches(subfolders, resources):
                         # Getting children uris 
                         dir_info['resource_children'] = [value for value in findKey(output, 'record_uri') if value != None]
             except KeyError:
-                pass
+                continue
             except Exception as e:
                 # logging.warning('Record not found: {}'.format(rec['uri']))
                 logging.error(e)
@@ -144,7 +144,7 @@ def check_resource_for_note(resource):
                     if subnote['content'] == string:
                         check += 1
                 except KeyError:
-                    pass
+                    continue
                 except Exception as e:
                     logging.error(e)
     if check == 0:
@@ -195,7 +195,7 @@ def update_archival_object_record(match):
     unmatched = []
     for f in match['files']:
         if f in successful_files:
-            pass
+            continue
         else:
             unmatched.append(f)
 
