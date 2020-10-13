@@ -21,23 +21,23 @@ def getRecordInfo(aspace_record):
 	try:
 		obj['title'] = aspace_record['title']
 	except KeyError:
-		continue
+		obj['title'] = ''
 	try:
 		obj['level'] = aspace_record['level']
 	except KeyError:
-		continue
+		obj['level'] = ''
 	try:
 		obj['dates'] = aspace_record['dates']
 	except KeyError:
-		continue
+		obj['dates'] = ''
 	try:
 		obj['publish'] = aspace_record['publish']
 	except KeyError:
-		continue
+		obj['publish'] = ''
 	try:
 		obj['top_container'] = aspace_record['instances'][0]['sub_container']['top_container']['ref']
 	except IndexError:
-		obj['top_container'] = ""
+		obj['top_container'] = ''
 
 	obj['uri'] = aspace_record['uri']
 
