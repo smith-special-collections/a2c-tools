@@ -18,6 +18,52 @@ DATE = datetime.date.today()
 DATE = DATE.__str__()
 
 
+def make_ex_doc(accession):
+	eds = []
+
+	if accession['external_documents1_title'] != None:
+		ed_dict = {'jsonmodel_type': 'external_document',
+				'location': '',
+				'publish': bool,
+				'title': ''}
+		ed_dict['title'] = accession['external_documents1_title']
+		try:
+			ed_dict['location'] = accession['external_documents1_location']
+		except Exception as e:
+			logging.error(e)
+		try:
+			if accession['external_documents1_publish'] == 'TRUE':
+				publish = True
+			else:
+				publish = False
+			ed_dict['publish'] = publish
+		except Exception as e:
+			ed_dict['publish'] = True
+		eds.append(ed_dict)
+
+	if accession['external_documents2_title'] != None:
+		ed_dict = {'jsonmodel_type': 'external_document',
+				'location': '',
+				'publish': bool,
+				'title': ''}
+		ed_dict['title'] = accession['external_documents2_title']
+		try:
+			ed_dict['location'] = accession['external_documents2_location']
+		except Exception as e:
+			logging.error(e)
+		try:
+			if accession['external_documents2_publish'] == 'TRUE':
+				publish = True
+			else:
+				publish = False
+			ed_dict['publish'] = publish
+		except Exception as e:
+			ed_dict['publish'] = True
+		eds.append(ed_dict)
+
+	return eds
+
+
 def make_accession_record(accession):
 	'''Function to make MRBC accessions connected to parent lots'''
 
@@ -39,6 +85,11 @@ def make_accession_record(accession):
 				 'suppressed': False,
 				 'title': accession['title'],
 				 'use_restrictions': False}
+
+	# External Documents
+	eds = make_ex_doc(accession)
+	if len(eds) >= 1:
+		acc_dict['external_documents'].extend(eds)
 
 	# Related accessions
 	acc_dict['related_accessions'] = []
@@ -95,10 +146,30 @@ def make_accession_record(accession):
 	if accession['content_description'] != None:
 		acc_dict['content_description'] = accession['content_description']
 
+	# Condition Description
+	if accession['condition_description'] != None:
+		acc_dict['condition_description'] = accession['condition_description']
+
+	# Disposition
+	if accession['disposition'] != None:
+		acc_dict['disposition'] = accession['disposition']
+
+	# Retention Rule
+	if accession['retention_rule'] != None:
+		acc_dict['retention_rule'] = accession['retention_rule']
+
+	# General Note
+	if accession['general_note'] != None:
+		acc_dict['general_note'] = accession['general_note']
+
 	# Extents
 	acc_dict['extents'] = []
 	extent_dict = {}
 	extent_dict['jsonmodel_type'] = 'extent'
+	try:
+		extent_dict['container_summary'] = accession['container_summary']
+	except Exception as e:
+		logging.error(e)
 	try:
 		extent_dict['extent_type'] = accession['extent_type'].lower().strip() + 's'
 	except Exception as e:
@@ -133,7 +204,7 @@ def make_accession_record(accession):
 		date_dict['calendar'] = 'gregorian'
 		date_dict['era'] = 'ce'
 		date_dict['jsonmodel_type'] = 'date'
-		date_dict['label'] = 'publication'
+		date_dict['label'] = accession['date_label'].lower()
 		acc_dict['dates'].append(date_dict)
 
 	# Acquisition Type
