@@ -1,11 +1,10 @@
 from archivesspace import archivesspace
-import pprint
-import argparse
+from pprint import pprint as pp
 import logging
 import json
-import pandas as pd
 import os
-
+import argparse
+import csv
 
 def add_repo_num_and_accession_uri_keys_to_json_contents(json_contents):
 	''' Adding keys to JSON contents that will hold values produced later in the script '''
@@ -39,23 +38,42 @@ def make_tuples_for_accession_creation(json_contents, unique_ids):
 	return accession_tuples 
 
 
+def validate_container_type(top_container):
+	'''Checks to see if container type entered is box, reel, or volume'''
+	valid_container_types = ['box', 'reel', 'volume']
+	as_entered = top_container['container_type'].lower()
+	if as_entered not in valid_container_types:
+		if as_entered != '':
+			return None
+		else:
+			return as_entered
+	else:
+		return as_entered
+
+
 def create_box(top_container):
 	'''Function to create a new top container'''
-	container_dict = {'active_restrictions': [],
-		'collection': [],
-		'container_locations': [],
-		'container_profile': {},
-		'indicator': str(top_container['container_indicator']),
-		'jsonmodel_type': 'top_container',
-		'repository': {'ref': '/repositories/' + str(top_container['repo_num'])},
-		'restricted': False,
-		'series': [],
-		'type':'box',
-		'publish': True}
+	valid_container = validate_container_type(top_container) 
+	# print(valid_container)
 
-	post = aspace.post('/repositories/' + str(top_container['repo_num']) + '/top_containers', container_dict)
+	if valid_container != None:
+		container_dict = {'active_restrictions': [],
+			'collection': [],
+			'container_locations': [],
+			'container_profile': {},
+			'indicator': str(top_container['container_indicator']),
+			'jsonmodel_type': 'top_container',
+			'repository': {'ref': '/repositories/' + str(top_container['repo_num'])},
+			'restricted': False,
+			'series': [],
+			'type': valid_container,
+			'publish': True}
 
-	return post['uri']
+		post = aspace.post('/repositories/' + str(top_container['repo_num']) + '/top_containers', container_dict)
+		return post['uri']
+	else:
+		logging.error('Invalid container type. Must be box, reel, or volume. Container could not be made.')
+		return None
 
 
 def create_archival_object(accession_tuple):
@@ -95,7 +113,7 @@ def make_archival_objects_and_put_uris_into_json_contents(json_contents, tuples)
 			series_tup = (series, tup[0])
 			accession_tuples.append(series_tup)
 		except Exception as e:
-			logging.warning('Failed to create new series level archival object for Accession {}. {}'.format(series_tup[0], e))
+			logging.warning('Failed to create new series level archival object for Accession {}. {}'.format(tup[0], e))
 			pass
 
 	for content in json_contents:
@@ -120,7 +138,7 @@ def create_boxes_and_link_them_to_accessions(json_contents):
 			post = aspace.post(accession['uri'], accession)
 			logging.debug(post)
 		except Exception as e:
-			logging.warning('Failed to create or link new containers to Accession {}'.format(content['accession_id'])) 
+			logging.error('Failed to create or link new containers to Accession {}'.format(content['accession_id'])) 
 			pass
 
 
@@ -142,12 +160,13 @@ if __name__ == "__main__":
 	file_name = cliArguments.CSVname
 
 
-	# Reads CSV file
-	csv_file = pd.DataFrame(pd.read_csv(file_name, sep = ",", header = 0, index_col = False))
+	list_of_dicts = []
+	with open(file_name) as csv_file:
+		reader = csv.DictReader(csv_file)
+		for row in reader:
+			list_of_dicts.append(row)
+			
 	
-	# Transforms CSV file into a list of Python dictionary objects
-	list_of_dicts = csv_file.to_dict('records')
-
 	# Creating new series level archival object records for accessions data and linking newly created top containers to them
 	add_repo_num_and_accession_uri_keys_to_json_contents(list_of_dicts)
 	unique_ids = extract_unique_accession_ids(list_of_dicts)
