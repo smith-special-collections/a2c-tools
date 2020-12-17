@@ -31,7 +31,7 @@ def make_tuples_for_accession_creation(json_contents, unique_ids):
 	for i in unique_ids:
 		for content in json_contents:
 			if i == content['accession_id']:
-				tup = (i, content['collection_uri'], content['repo_num'], content['level_of_description'].lower())
+				tup = (i, content['collection_uri'], content['repo_num'], content['level_of_description'].lower(), content['publish'].capitalize())
 				if not tup in accession_tuples:
 					accession_tuples.append(tup)
 
@@ -66,8 +66,7 @@ def create_box(top_container):
 			'repository': {'ref': '/repositories/' + str(top_container['repo_num'])},
 			'restricted': False,
 			'series': [],
-			'type': valid_container,
-			'publish': True}
+			'type': valid_container}
 
 		post = aspace.post('/repositories/' + str(top_container['repo_num']) + '/top_containers', container_dict)
 		return post['uri']
@@ -89,11 +88,11 @@ def create_archival_object(accession_tuple):
 		"linked_agents":[],
 		"is_slug_auto": True,
 		"restrictions_apply": False,
-		"publish": True,
+		"publish": bool(accession_tuple[4]),
 		"ancestors":[],
 		"instances":[], 
 		"notes":[],
-		"level": "series",
+		"level": accession_tuple[3],
 		"component_id": "Accession " + accession_tuple[0],
 		"title": "Accession " + accession_tuple[0],
 		"resource": { "ref": accession_tuple[1]}}
@@ -170,8 +169,8 @@ if __name__ == "__main__":
 	# Creating new series level archival object records for accessions data and linking newly created top containers to them
 	add_repo_num_and_accession_uri_keys_to_json_contents(list_of_dicts)
 	unique_ids = extract_unique_accession_ids(list_of_dicts)
-	id_coluri_reponum_descriplevel = make_tuples_for_accession_creation(list_of_dicts, unique_ids)
-	make_archival_objects_and_put_uris_into_json_contents(list_of_dicts, id_coluri_reponum_descriplevel)
+	id_coluri_reponum_descriplevel_publish = make_tuples_for_accession_creation(list_of_dicts, unique_ids)
+	make_archival_objects_and_put_uris_into_json_contents(list_of_dicts, id_coluri_reponum_descriplevel_publish)
 	create_boxes_and_link_them_to_accessions(list_of_dicts)                   	
 
 
