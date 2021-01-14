@@ -3,7 +3,7 @@ from archivesspace import archivesspace
 import logging
 import argparse
 import csv
-
+from pprint import pprint as pp
 
 # Generates spreadsheet for label creation
 
@@ -213,15 +213,55 @@ if __name__ == "__main__":
 	# Get top container information
 	spreadsheet_info = get_spreadsheet_data()
 
-	# Make spreadsheet
-	keys = spreadsheet_info['data'][0].keys()
-	outpath = 'labels_for_resource_' + spreadsheet_info['data'][0]['collection_title'].replace(" ", "_") + '.csv'
-	
-	with open(outpath, 'w') as f:
-		w = csv.DictWriter(f, keys)
-		w.writeheader()
-		for obj in spreadsheet_info['data']:
-			w.writerow(obj)
+	regular = {}
+	regular['data'] = []
 
-	logging.info('Spreadsheet generated: {}'.format(outpath))
+	half = {}
+	half['data'] = []
+
+	oversize = {}
+	oversize['data'] = []
+
+
+	for row in spreadsheet_info['data']:
+		if row['label_size'] == 'regular':
+			regular['data'].append(row)
+		elif row['label_size'] == 'half':
+			half['data'].append(row)
+		elif row['label_size'] == 'oversize':
+			oversize['data'].append(row)
+
+	# Make spreadsheets
+	keys = spreadsheet_info['data'][0].keys()
+	
+	reg_outpath = 'reg_labels_for_resource_' + spreadsheet_info['data'][0]['collection_title'].replace(" ", "_") + '.csv'
+	half_outpath = 'half_labels_for_resource_' + spreadsheet_info['data'][0]['collection_title'].replace(" ", "_") + '.csv'
+	os_outpath = 'os_labels_for_resource_' + spreadsheet_info['data'][0]['collection_title'].replace(" ", "_") + '.csv'
+	
+
+	if len(regular['data']) > 0:
+		with open(reg_outpath, 'w') as f:
+			w = csv.DictWriter(f, keys)
+			w.writeheader()
+			for obj in regular['data']:
+				w.writerow(obj)
+			logging.info(f'Spreadsheet generated: {reg_outpath}')
+
+	if len(half['data']) > 0:
+		with open(half_outpath, 'w') as f:
+			w = csv.DictWriter(f, keys)
+			w.writeheader()
+			for obj in half['data']:
+				w.writerow(obj)
+		logging.info(f'Spreadsheet generated: {half_outpath}')
+
+	if len(oversize['data']) > 0:
+		with open(os_outpath, 'w') as f:
+			w = csv.DictWriter(f, keys)
+			w.writeheader()
+			for obj in oversize['data']:
+				w.writerow(obj)
+		logging.info(f'Spreadsheet generated: {os_outpath}')
+
+	
 	
