@@ -40,8 +40,13 @@ def get_unique_top_containers(children_uris):
 	for uri in children_uris:
 		child = aspace.get(uri)
 		if len(child['instances']) != 0:
-			if child['instances'][0]['sub_container']['top_container']['ref'] not in instances:
-				instances.append(child['instances'][0]['sub_container']['top_container']['ref'])
+			try:
+				if child['instances'][0]['sub_container']['top_container']['ref'] not in instances:
+					instances.append(child['instances'][0]['sub_container']['top_container']['ref'])
+			except KeyError:
+				logging.error(f'No container instance found for {uri}')
+			except Exception as e:
+				logging.error(f'{uri}: {e}')
 
 
 	return instances
