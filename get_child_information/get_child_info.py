@@ -38,6 +38,11 @@ def getRecordInfo(aspace_record):
 		obj['top_container'] = aspace_record['instances'][0]['sub_container']['top_container']['ref']
 	except IndexError:
 		obj['top_container'] = ''
+	except KeyError:
+		obj['top_container'] = ''
+	except Exception as e:
+		obj['top_container'] = ''
+		logging.error(e)
 
 	obj['uri'] = aspace_record['uri']
 
