@@ -1,4 +1,5 @@
-from archivesspace import archivesspace
+# from archivesspace import archivesspace
+from asnake.aspace import ASpace
 import argparse
 import logging
 import datetime
@@ -295,6 +296,8 @@ if __name__ == "__main__":
 
 	logging.basicConfig(level=logging.INFO)
 
+	aspace = ASpace()
+
 	csv_file = cliArguments.CSVname
 
 	# Reads CSV file
@@ -305,7 +308,7 @@ if __name__ == "__main__":
 			if row['complete'] == 'TRUE':
 				record = make_accession_record(row)
 				try:
-					post = aspace.post('/repositories/3/accessions', record)
+					post = aspace.client.post('/repositories/3/accessions', record)
 					logging.info('Accession record created for {}'.format(row['title']))
 				except Exception as e:
 					logging.warning('Failure to create accession record for {}: {}'.format(row['title'], e))
