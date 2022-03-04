@@ -14,6 +14,8 @@ RELATOR_DICT = {
     'editor': 'edt',
     'publisher': 'pbl',
     'translator': 'trl'
+    'bookseller': 'bsl',
+    'printer':'prt'
 }
 
 DATE = datetime.date.today()
@@ -93,17 +95,18 @@ def make_accession_record(accession):
     if len(eds) >= 1:
         acc_dict['external_documents'].extend(eds)
 
-    # Related accessions
-    acc_dict['related_accessions'] = []
-    rel_acc = {}
-    rel_acc['jsonmodel_type'] = 'accession_parts_relationship'
-    rel_acc['relator'] = 'forms_part_of'
-    rel_acc['relator_type'] = 'part'
-    try:
-        rel_acc['ref'] = accession['related_accessions']
-        acc_dict['related_accessions'].append(rel_acc)
-    except Exception as e:
-        logger.error(e)
+    # Related accessions - updated to only add if there is one
+    if len(accession['related_accessions']) >= 1:
+        acc_dict['related_accessions'] = []
+        rel_acc = {}
+        rel_acc['jsonmodel_type'] = 'accession_parts_relationship'
+        rel_acc['relator'] = 'forms_part_of'
+        rel_acc['relator_type'] = 'part'
+        try:
+            rel_acc['ref'] = accession['related_accessions']
+            acc_dict['related_accessions'].append(rel_acc)
+        except Exception as e:
+            logger.error(e)
 
     # Provenance
     if accession['provenance'] != None:
@@ -222,22 +225,22 @@ def make_accession_record(accession):
         for key in RELATOR_DICT.keys():
             if key == accession['agent_type1'].lower().strip():
                 relator1 = RELATOR_DICT[key]
-            else:
-                relator1 = ""
+            #else:
+            #    relator1 = ""
 
     if accession['agent_type2'] != None:
         for key in RELATOR_DICT.keys():
             if key == accession['agent_type2'].lower().strip():
                 relator2 = RELATOR_DICT[key]
-            else:
-                relator2 = ""
+            #else:
+            #    relator2 = ""
 
     agent1 = {}
     agent1['terms'] = []
     try:
         if accession['agent_uri1'][0] == '/':
             agent1['ref'] = accession['agent_uri1'].strip()
-            if relator1 != "":
+            if len(accession['agent_type1']) >= 1:
                 agent1['relator'] = relator1
             if accession['linked_agent_role1'].strip() != None:
                 agent1['role'] = accession['linked_agent_role1'].lower().strip()
@@ -251,14 +254,24 @@ def make_accession_record(accession):
     try:
         if accession['agent_uri2'][0] == '/':
             agent2['ref'] = accession['agent_uri2'].strip()
-            if relator2 != "":
-                agent2['relator'] = relator1
+            if len(accession['agent_type2']) >= 1:
+                agent2['relator'] = relator2
             if accession['linked_agent_role2'].strip() != None:
                 agent2['role'] = accession['linked_agent_role2'].lower().strip()
 
             acc_dict['linked_agents'].append(agent2)
     except Exception as e:
         logger.error(e)
+        
+    #Subjects
+    if accession['subject'] != None:
+        subject = {}
+        subject['ref'] = accession['subject']
+        try:
+            acc_dict['subjects'].append(subject)
+        except Exception as e:
+            logger.error(e)        
+        
 
     # Payments module
     payment_summary = {}
