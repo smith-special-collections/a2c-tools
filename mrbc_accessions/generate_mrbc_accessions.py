@@ -13,7 +13,7 @@ RELATOR_DICT = {
     'donor': 'dnr',
     'editor': 'edt',
     'publisher': 'pbl',
-    'translator': 'trl'
+    'translator': 'trl',
     'bookseller': 'bsl',
     'printer':'prt'
 }
