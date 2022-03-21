@@ -322,3 +322,5 @@ if __name__ == "__main__":
                         logger.error("failed to create accession record for " + row['title'])
                 except Exception as e:
                     logger.error("failed to create accession record for " + row['title'])
+            else:
+                print("Accession " + row['id_0'] + "-" + row['id_1'] + "-" + row['id_2'] + "-" + row['id_3'] + " has not been marked complete. No attempt to add to database.")
