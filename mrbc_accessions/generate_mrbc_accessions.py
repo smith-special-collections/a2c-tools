@@ -249,19 +249,20 @@ def make_accession_record(accession):
     except Exception as e:
         logger.error(e)
 
-    agent2 = {}
-    agent2['terms'] = []
-    try:
-        if accession['agent_uri2'][0] == '/':
-            agent2['ref'] = accession['agent_uri2'].strip()
-            if len(accession['agent_type2']) >= 1:
-                agent2['relator'] = relator2
-            if accession['linked_agent_role2'].strip() != None:
-                agent2['role'] = accession['linked_agent_role2'].lower().strip()
+    if accession['agent_uri2'] != None:
+        agent2 = {}
+        agent2['terms'] = []
+        try:
+            if accession['agent_uri2'][0] == '/':
+                agent2['ref'] = accession['agent_uri2'].strip()
+                if len(accession['agent_type2']) >= 1:
+                    agent2['relator'] = relator2
+                if accession['linked_agent_role2'].strip() != None:
+                    agent2['role'] = accession['linked_agent_role2'].lower().strip()
 
-            acc_dict['linked_agents'].append(agent2)
-    except Exception as e:
-        logger.error(e)
+                acc_dict['linked_agents'].append(agent2)
+        except Exception as e:
+            logger.error(e)
         
     #Subjects
     if accession['subject'] != None:
